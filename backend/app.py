@@ -63,6 +63,24 @@ def create_app(config_class=Config):
     # Create tables
     with app.app_context():
         db.create_all()
+        # Seed an admin user if not exists
+        try:
+            from backend.models import User
+            admin = User.query.filter_by(role='admin').first()
+            if not admin:
+                new_admin = User(
+                    name="Admin User",
+                    email="admin@smooth.co.ke",
+                    role="admin",
+                    phone="0700000000",
+                    is_verified=True
+                )
+                new_admin.set_password("admin123")
+                db.session.add(new_admin)
+                db.session.commit()
+                print("Seeded admin user: admin@smooth.co.ke / admin123")
+        except Exception as e:
+            print(f"Failed to seed admin user: {e}")
 
     return app
 
