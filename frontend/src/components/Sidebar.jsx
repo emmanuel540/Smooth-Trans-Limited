@@ -5,6 +5,7 @@ import {
   FaClipboardList, FaMoneyBillWave, FaSignOutAlt, 
   FaFileAlt, FaHome, FaUser 
 } from 'react-icons/fa';
+import smoothLogo from '../assets/smooth_trans_logo.png';
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -53,36 +54,25 @@ const Sidebar = () => {
   const links = getRoleLinks();
 
   return (
-    <div className="sidebar" style={{ padding: '20px' }}>
-      {/* Title */}
-      <Link to="/" style={{ textDecoration: 'none', marginBottom: '30px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{
-            background: 'linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-teal) 100%)',
-            width: '28px',
-            height: '28px',
-            borderRadius: '6px',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            color: 'white'
-          }}>
-            <FaTruck size={14} />
-          </div>
-          <span className="gradient-text gradient-title" style={{
-            fontSize: '1.05rem',
-            fontWeight: 800,
-            textTransform: 'uppercase'
-          }}>Smooth Trans</span>
-        </div>
-      </Link>
-
+    <div className="sidebar" style={{ 
+      padding: '20px',
+      background: '#ffffff',
+      borderRight: '1px solid rgba(43, 108, 176, 0.15)',
+      display: 'flex',
+      flexDirection: 'column',
+      position: 'fixed',
+      top: '67px',
+      bottom: 0,
+      left: 0,
+      width: '260px',
+      zIndex: 100
+    }}>
       {/* Profile summary */}
       <div style={{
-        background: 'rgba(255, 255, 255, 0.03)',
+        background: '#f5faff',
         borderRadius: '12px',
         padding: '12px',
-        border: '1px solid var(--border-light)',
+        border: '1px solid rgba(43, 108, 176, 0.15)',
         marginBottom: '25px'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -90,24 +80,23 @@ const Sidebar = () => {
             width: '36px',
             height: '36px',
             borderRadius: '50%',
-            background: 'rgba(16, 185, 129, 0.1)',
-            border: '1px solid var(--primary-teal)',
+            background: '#2b6cb0',
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            color: 'var(--primary-teal)'
+            color: '#f5faff'
           }}>
             <FaUser size={14} />
           </div>
           <div style={{ overflow: 'hidden' }}>
-            <div style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-primary)', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+            <div style={{ fontWeight: 700, fontSize: '0.85rem', color: '#2b6cb0', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
               {user.name}
             </div>
             <div style={{
               fontSize: '0.7rem',
-              color: 'var(--primary-blue)',
+              color: 'rgba(43, 108, 176, 0.7)',
               textTransform: 'capitalize',
-              fontWeight: 600
+              fontWeight: 700
             }}>
               {user.role}
             </div>
@@ -126,35 +115,35 @@ const Sidebar = () => {
               display: 'flex',
               alignItems: 'center',
               gap: '12px',
-              color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
-              background: isActive ? 'rgba(16, 185, 129, 0.12)' : 'transparent',
+              color: '#2b6cb0',
+              background: isActive ? '#f5faff' : 'transparent',
               border: '1px solid',
-              borderColor: isActive ? 'var(--border-active)' : 'transparent',
+              borderColor: isActive ? '#2b6cb0' : 'transparent',
               textDecoration: 'none',
               padding: '12px 16px',
               borderRadius: '10px',
               fontSize: '0.9rem',
-              fontWeight: isActive ? 600 : 500,
-              transition: 'all 0.3s ease'
+              fontWeight: isActive ? 700 : 500,
+              transition: 'all 0.2s ease'
             })}
           >
-            <span style={{ fontSize: '1.1rem' }}>{link.icon}</span>
+            <span style={{ fontSize: '1.1rem', display: 'flex', alignItems: 'center' }}>{link.icon}</span>
             <span>{link.name}</span>
           </NavLink>
         ))}
       </div>
 
       {/* Bottom controls */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', borderTop: '1px solid var(--border-light)', paddingTop: '15px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', borderTop: '1px solid rgba(43, 108, 176, 0.15)', paddingTop: '15px' }}>
         <Link to="/" style={{
           display: 'flex',
           alignItems: 'center',
           gap: '12px',
-          color: 'var(--text-secondary)',
+          color: '#2b6cb0',
           textDecoration: 'none',
           padding: '10px 16px',
           fontSize: '0.9rem',
-          fontWeight: 500
+          fontWeight: 600
         }}>
           <FaHome />
           <span>Public Home</span>
@@ -165,13 +154,13 @@ const Sidebar = () => {
             display: 'flex',
             alignItems: 'center',
             gap: '12px',
-            color: 'var(--accent-rose)',
+            color: '#2b6cb0',
             background: 'transparent',
             border: 'none',
             cursor: 'pointer',
             padding: '10px 16px',
             fontSize: '0.9rem',
-            fontWeight: 600,
+            fontWeight: 700,
             width: '100%',
             textAlign: 'left'
           }}

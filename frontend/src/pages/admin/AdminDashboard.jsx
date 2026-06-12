@@ -9,7 +9,7 @@ import {
   FaUserTie, FaRegLightbulb, FaHourglassHalf, FaChartLine 
 } from 'react-icons/fa';
 
-const COLORS = ['#0ea5e9', '#10b981', '#f59e0b', '#f43f5e'];
+const COLORS = ['#2b6cb0', 'rgba(43, 108, 176, 0.7)', 'rgba(43, 108, 176, 0.5)', 'rgba(43, 108, 176, 0.3)'];
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);

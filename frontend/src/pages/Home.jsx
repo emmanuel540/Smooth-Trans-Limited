@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import './Home.css';
+
 import { 
-  FaCalendarCheck, FaMapMarkedAlt, FaWrench, 
-  FaMoneyBillWave, FaArrowRight, FaRoute, FaBolt 
+  FaCalendarCheck, FaMapMarkedAlt, 
+  FaWrench, FaRoute
 } from 'react-icons/fa';
 import Navbar from '../components/Navbar';
 
@@ -32,7 +34,6 @@ const Home = () => {
     const startZone = nairobiZones.find(z => z.name === pickup);
     const endZone = nairobiZones.find(z => z.name === dropoff);
     
-    // Call estimation API
     fetch('http://localhost:5000/api/bookings/estimate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -54,61 +55,30 @@ const Home = () => {
   };
 
   return (
-    <div>
+    <div style={{ background: '#f5faff', minHeight: '100vh' }}>
       <Navbar />
       
       {/* Hero Section */}
-      <section className="hero-section animate-fade-in" style={{ padding: '80px 20px', position: 'relative' }}>
-        <div style={{ maxWidth: '1000px', display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '40px', alignItems: 'center' }} className="hero-grid">
-          <div style={{ textAlign: 'left' }}>
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              background: 'rgba(16, 185, 129, 0.1)',
-              border: '1px solid var(--border-active)',
-              padding: '6px 14px',
-              borderRadius: '20px',
-              fontSize: '0.8rem',
-              fontWeight: 600,
-              color: 'var(--primary-teal)',
-              marginBottom: '20px'
-            }}>
-              <FaBolt />
-              <span>AI-POWERED LOGISTICS FLEET SYSTEM</span>
-            </div>
-            
-            <h1 className="gradient-title" style={{ fontSize: '3.5rem', lineHeight: '1.1', marginBottom: '20px' }}>
-              Intelligent <br />
-              <span className="gradient-text">Logistics & Transit</span> <br />
-              For Smooth Operations
-            </h1>
-            
-            <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', marginBottom: '30px', maxWidth: '500px', lineHeight: '1.6' }}>
-              Smooth Trans Limited provides smart booking systems, live fleet tracking, AI route optimization, predictive maintenance, and M-Pesa integrations.
-            </p>
-            
-            <div style={{ display: 'flex', gap: '15px' }}>
-              <Link to="/register" className="btn-primary" style={{ textDecoration: 'none' }}>
-                <span>Get Started Now</span>
-                <FaArrowRight size={14} />
-              </Link>
-              <Link to="/services" className="btn-secondary" style={{ textDecoration: 'none' }}>
-                Explore Services
-              </Link>
-            </div>
-          </div>
+      <section className="hero-section" style={{ padding: '60px 20px' }}>
+        <div style={{ maxWidth: '480px', margin: '0 auto', width: '100%' }}>
 
-          {/* Quick Calculator Panel */}
-          <div className="glass-card animate-slide-up" style={{ width: '100%' }}>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '20px' }}>Fare Estimator</h3>
+          {/* Fare Estimator Card — centred */}
+          <div style={{ 
+            background: '#ffffff', 
+            border: '1px solid rgba(43, 108, 176, 0.15)', 
+            borderRadius: '24px', 
+            padding: '36px', 
+            boxShadow: '0 10px 25px rgba(43, 108, 176, 0.05)'
+          }}>
+            <h3 style={{ fontSize: '1.3rem', fontWeight: 800, marginBottom: '20px', color: '#2b6cb0' }}>Fare Estimator</h3>
             <form onSubmit={handleEstimate} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
               <div>
-                <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px', textAlign: 'left', fontWeight: 600 }}>Pickup Zone</label>
+                <label style={{ fontSize: '0.85rem', color: '#2b6cb0', display: 'block', marginBottom: '6px', textAlign: 'left', fontWeight: 700 }}>Pickup Zone</label>
                 <select 
                   className="glass-input" 
                   value={pickup} 
                   onChange={(e) => setPickup(e.target.value)}
+                  style={{ color: '#2b6cb0', border: '1px solid rgba(43, 108, 176, 0.25)' }}
                   required
                 >
                   <option value="">Select Pickup</option>
@@ -119,11 +89,12 @@ const Home = () => {
               </div>
 
               <div>
-                <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px', textAlign: 'left', fontWeight: 600 }}>Destination Zone</label>
+                <label style={{ fontSize: '0.85rem', color: '#2b6cb0', display: 'block', marginBottom: '6px', textAlign: 'left', fontWeight: 700 }}>Destination Zone</label>
                 <select 
                   className="glass-input" 
                   value={dropoff} 
                   onChange={(e) => setDropoff(e.target.value)}
+                  style={{ color: '#2b6cb0', border: '1px solid rgba(43, 108, 176, 0.25)' }}
                   required
                 >
                   <option value="">Select Destination</option>
@@ -134,11 +105,12 @@ const Home = () => {
               </div>
 
               <div>
-                <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px', textAlign: 'left', fontWeight: 600 }}>Service Type</label>
+                <label style={{ fontSize: '0.85rem', color: '#2b6cb0', display: 'block', marginBottom: '6px', textAlign: 'left', fontWeight: 700 }}>Service Type</label>
                 <select 
                   className="glass-input" 
                   value={serviceType} 
                   onChange={(e) => setServiceType(e.target.value)}
+                  style={{ color: '#2b6cb0', border: '1px solid rgba(43, 108, 176, 0.25)' }}
                 >
                   <option value="General">General Transport</option>
                   <option value="School">School Transit</option>
@@ -147,8 +119,8 @@ const Home = () => {
                 </select>
               </div>
 
-              <button type="submit" className="btn-primary" disabled={loading} style={{ marginTop: '10px' }}>
-                {loading ? <div className="loader-spinner"></div> : 'Calculate Estimate'}
+              <button type="submit" className="btn-primary" disabled={loading} style={{ marginTop: '10px', width: '100%', padding: '12px', borderRadius: '12px' }}>
+                {loading ? <div className="loader-spinner" style={{ margin: '0 auto' }}></div> : 'Calculate Estimate'}
               </button>
             </form>
 
@@ -156,20 +128,20 @@ const Home = () => {
               <div style={{
                 marginTop: '20px',
                 padding: '15px',
-                background: 'rgba(16, 185, 129, 0.05)',
-                border: '1px dashed var(--border-active)',
-                borderRadius: '10px',
+                background: '#f5faff',
+                border: '1px solid #2b6cb0',
+                borderRadius: '12px',
                 textAlign: 'left'
               }}>
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Estimated Distance</div>
-                <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '10px' }}>
+                <div style={{ fontSize: '0.85rem', color: '#2b6cb0', opacity: 0.8 }}>Estimated Distance</div>
+                <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#2b6cb0', marginBottom: '10px' }}>
                   {estimation.distance_km} km
                 </div>
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Calculated Fare</div>
-                <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--primary-teal)' }}>
+                <div style={{ fontSize: '0.85rem', color: '#2b6cb0', opacity: 0.8 }}>Calculated Fare</div>
+                <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#2b6cb0' }}>
                   KES {estimation.fare}
                 </div>
-                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '8px' }}>
+                <div style={{ fontSize: '0.75rem', color: '#2b6cb0', opacity: 0.6, marginTop: '8px' }}>
                   *Rates based on standard tariff profiles. Sign in to proceed to routing selection & booking.
                 </div>
               </div>
@@ -179,10 +151,10 @@ const Home = () => {
       </section>
 
       {/* Features Grid */}
-      <section style={{ padding: '80px 20px', background: 'rgba(255, 255, 255, 0.01)', borderTop: '1px solid var(--border-light)' }}>
+      <section style={{ padding: '80px 20px', background: '#ffffff', borderTop: '1px solid rgba(43, 108, 176, 0.15)' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', textAlign: 'center' }}>
-          <h2 className="gradient-title" style={{ fontSize: '2.2rem', marginBottom: '15px' }}>Core Platform Features</h2>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '50px', maxWidth: '600px', margin: '0 auto 50px auto' }}>
+          <h2 style={{ fontSize: '2.2rem', marginBottom: '15px', fontWeight: 800, color: '#2b6cb0' }}>Core Platform Features</h2>
+          <p style={{ color: '#2b6cb0', opacity: 0.8, marginBottom: '50px', maxWidth: '600px', margin: '0 auto 50px auto' }}>
             Built using next-generation automation concepts to present a highly functional student project outline.
           </p>
 
@@ -192,61 +164,85 @@ const Home = () => {
             gap: '30px'
           }}>
             {/* feature 1 */}
-            <div className="glass-card">
+            <div style={{ 
+              background: '#f5faff', 
+              border: '1px solid rgba(43, 108, 176, 0.15)', 
+              borderRadius: '20px', 
+              padding: '30px',
+              textAlign: 'left'
+            }}>
               <div style={{
-                width: '50px', height: '50px', borderRadius: '12px', background: 'rgba(14, 165, 233, 0.1)',
-                display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'var(--primary-blue)',
+                width: '50px', height: '50px', borderRadius: '12px', background: '#2b6cb0',
+                display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#f5faff',
                 fontSize: '1.5rem', marginBottom: '20px'
               }}>
                 <FaCalendarCheck />
               </div>
-              <h4 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '10px', textAlign: 'left' }}>Smart Bookings</h4>
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', textAlign: 'left', lineHeight: '1.6' }}>
+              <h4 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '10px', color: '#2b6cb0' }}>Smart Bookings</h4>
+              <p style={{ fontSize: '0.95rem', color: '#2b6cb0', opacity: 0.8, lineHeight: '1.6' }}>
                 Secure on-demand rides, schedule school pickups, or order bulky parcel dispatch via localized request sheets.
               </p>
             </div>
 
             {/* feature 2 */}
-            <div className="glass-card">
+            <div style={{ 
+              background: '#f5faff', 
+              border: '1px solid rgba(43, 108, 176, 0.15)', 
+              borderRadius: '20px', 
+              padding: '30px',
+              textAlign: 'left'
+            }}>
               <div style={{
-                width: '50px', height: '50px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.1)',
-                display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'var(--primary-teal)',
+                width: '50px', height: '50px', borderRadius: '12px', background: '#2b6cb0',
+                display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#f5faff',
                 fontSize: '1.5rem', marginBottom: '20px'
               }}>
                 <FaMapMarkedAlt />
               </div>
-              <h4 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '10px', textAlign: 'left' }}>Live Map Tracking</h4>
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', textAlign: 'left', lineHeight: '1.6' }}>
+              <h4 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '10px', color: '#2b6cb0' }}>Live Map Tracking</h4>
+              <p style={{ fontSize: '0.95rem', color: '#2b6cb0', opacity: 0.8, lineHeight: '1.6' }}>
                 Interactive GIS Leaflet plotting tracks vehicle coordinate progress in real-time, matching ETA details.
               </p>
             </div>
 
             {/* feature 3 */}
-            <div className="glass-card">
+            <div style={{ 
+              background: '#f5faff', 
+              border: '1px solid rgba(43, 108, 176, 0.15)', 
+              borderRadius: '20px', 
+              padding: '30px',
+              textAlign: 'left'
+            }}>
               <div style={{
-                width: '50px', height: '50px', borderRadius: '12px', background: 'rgba(245, 158, 11, 0.1)',
-                display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'var(--accent-amber)',
+                width: '50px', height: '50px', borderRadius: '12px', background: '#2b6cb0',
+                display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#f5faff',
                 fontSize: '1.5rem', marginBottom: '20px'
               }}>
                 <FaRoute />
               </div>
-              <h4 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '10px', textAlign: 'left' }}>Route AI Optimizer</h4>
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', textAlign: 'left', lineHeight: '1.6' }}>
+              <h4 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '10px', color: '#2b6cb0' }}>Route Optimizer</h4>
+              <p style={{ fontSize: '0.95rem', color: '#2b6cb0', opacity: 0.8, lineHeight: '1.6' }}>
                 Select Shortest, Fastest, or Eco-efficient paths based on fuel consumption analysis.
               </p>
             </div>
 
             {/* feature 4 */}
-            <div className="glass-card">
+            <div style={{ 
+              background: '#f5faff', 
+              border: '1px solid rgba(43, 108, 176, 0.15)', 
+              borderRadius: '20px', 
+              padding: '30px',
+              textAlign: 'left'
+            }}>
               <div style={{
-                width: '50px', height: '50px', borderRadius: '12px', background: 'rgba(244, 63, 94, 0.1)',
-                display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'var(--accent-rose)',
+                width: '50px', height: '50px', borderRadius: '12px', background: '#2b6cb0',
+                display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#f5faff',
                 fontSize: '1.5rem', marginBottom: '20px'
               }}>
                 <FaWrench />
               </div>
-              <h4 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '10px', textAlign: 'left' }}>Predictive Fleet Diagnostics</h4>
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', textAlign: 'left', lineHeight: '1.6' }}>
+              <h4 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '10px', color: '#2b6cb0' }}>Predictive Diagnostics</h4>
+              <p style={{ fontSize: '0.95rem', color: '#2b6cb0', opacity: 0.8, lineHeight: '1.6' }}>
                 Monitors engine fatigue metrics to trigger predictive service intervals before failures take place.
               </p>
             </div>
@@ -257,30 +253,17 @@ const Home = () => {
       {/* Footer */}
       <footer style={{
         padding: '40px 20px',
-        borderTop: '1px solid var(--border-light)',
         textAlign: 'center',
-        background: '#04060a'
+        background: '#2b6cb0',
+        color: '#f5faff',
+        borderTop: '1px solid rgba(245, 250, 255, 0.15)'
       }}>
-        <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+        <div style={{ fontSize: '0.9rem', fontWeight: 600 }}>
           &copy; {new Date().getFullYear()} Smooth Trans Limited. All rights reserved. Built as a Logistics final year project.
         </div>
       </footer>
 
-      {/* Inline styles for hero grid layout */}
-      <style>{`
-        .hero-grid {
-          width: 100%;
-        }
-        @media (max-width: 768px) {
-          .hero-grid {
-            grid-template-columns: 1fr !important;
-            text-align: center;
-          }
-          .hero-grid div:first-child {
-            text-align: center !important;
-          }
-        }
-      `}</style>
+
     </div>
   );
 };
