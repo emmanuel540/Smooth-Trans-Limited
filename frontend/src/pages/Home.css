@@ -1,62 +1,11 @@
-/* Simple white and light‑bluish styling for the Home page */
-.home-container {
-  margin-bottom: 12px;
-  margin-top: 28px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
+/* Specific Home page visual enhancements */
+
+.hero-split {
+  animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.main-heading {
-  max-width: 4xl;
-  font-size: 5xl;
-  font-weight: bold;
-  color: #2b6cb0; /* light bluish */
-}
-
-.sub-text {
-  margin-top: 5px;
-  font-size: 1rem;
-  font-weight: bold;
-  color: #2b6cb0; /* updated to allowed color */
-}
-
-.button-container {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: 4px;
-}
-
-.primary-button,
-.secondary-button {
-  padding: 10px 20px;
-  background-color: #2b6cb0; /* primary color */
-  color: #f5faff; /* secondary color for text */
-  border: none;
-  border-radius: 5px;
-  text-decoration: none;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.primary-button:hover,
-.secondary-button:hover {
-  background-color: #2b6cb0;
-}
-
-.arrow-icon {
-  margin-left: 2px;
-  height: 20px;
-  width: 20px;
-}
-
-/* Minimal page background */
-body {
-  background-color: #f5faff; /* very light blue */
-  color: #2b6cb0; /* primary text color */
-  margin: 0;
-  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+@media (max-width: 992px) {
+  .hero-split h1 {
+    font-size: 2.5rem !important;
+  }
 }
