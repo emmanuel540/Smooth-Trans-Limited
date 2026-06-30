@@ -30,7 +30,7 @@ def estimate_fare():
 
     # Rates based on booking type
     rates = {
-        'General': {'base': 150, 'per_km': 50},
+        'General': {'base': 50, 'per_km': 10},
         'School': {'base': 1000, 'per_km': 30},
         'Delivery': {'base': 100, 'per_km': 40},
         'Moving': {'base': 3000, 'per_km': 150}
@@ -70,7 +70,7 @@ def create_booking():
     distance_km = calculate_distance(lat1, lng1, lat2, lng2)
     
     rates = {
-        'General': {'base': 150, 'per_km': 50},
+        'General': {'base': 50, 'per_km': 10},
         'School': {'base': 1000, 'per_km': 30},
         'Delivery': {'base': 100, 'per_km': 40},
         'Moving': {'base': 3000, 'per_km': 150}

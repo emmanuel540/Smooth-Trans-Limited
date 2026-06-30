@@ -153,7 +153,7 @@ def seed_database():
                 
                 # Fares
                 rates = {
-                    'General': {'base': 150, 'per_km': 50},
+                    'General': {'base': 50, 'per_km': 10},
                     'School': {'base': 1000, 'per_km': 30},
                     'Delivery': {'base': 100, 'per_km': 40},
                     'Moving': {'base': 3000, 'per_km': 150}

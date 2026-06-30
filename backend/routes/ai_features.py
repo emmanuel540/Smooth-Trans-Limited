@@ -38,6 +38,7 @@ def optimize_route():
     data = request.get_json() or {}
     pickup = data.get('pickup_coords')
     dropoff = data.get('dropoff_coords')
+    booking_type = data.get('booking_type', 'General')
 
     if not pickup or not dropoff:
         return jsonify({'message': 'Pickup and dropoff coordinates are required'}), 400
@@ -51,23 +52,34 @@ def optimize_route():
     # Base direct distance
     direct_dist = math.sqrt((lat2 - lat1)**2 + (lng2 - lng1)**2) * 111.0
 
+    # Rates based on booking type
+    rates = {
+        'General': {'base': 50, 'per_km': 10},
+        'School': {'base': 1000, 'per_km': 30},
+        'Delivery': {'base': 100, 'per_km': 40},
+        'Moving': {'base': 3000, 'per_km': 150}
+    }
+    type_rate = rates.get(booking_type, rates['General'])
+    base = type_rate['base']
+    per_km = type_rate['per_km']
+
     # 1. Shortest Route
     shortest_dist = round(direct_dist, 2)
     shortest_time = round((shortest_dist / 40.0) * 60) # mins, @ 40 km/h average city speed
     shortest_fuel = round(shortest_dist * 0.10, 1) # 10L/100km
-    shortest_cost = round(150 + (shortest_dist * 50), -1)
+    shortest_cost = round(base + (shortest_dist * per_km), -1)
 
     # 2. Cheapest Fuel (slightly longer distance, but bypasses traffic and hills for better mileage)
     cheapest_dist = round(direct_dist * 1.12, 2)
     cheapest_time = round((cheapest_dist / 48.0) * 60) # mins, smoother speed
     cheapest_fuel = round(cheapest_dist * 0.075, 1) # 7.5L/100km eco mode
-    cheapest_cost = round(150 + (cheapest_dist * 40), -1) # Lower fuel surcharge
+    cheapest_cost = round(base + (cheapest_dist * per_km * 0.8), -1) # Lower fuel surcharge multiplier
 
     # 3. Fastest Route (Express highway/bypass - longer, but higher speed limit)
     fastest_dist = round(direct_dist * 1.25, 2)
     fastest_time = round((fastest_dist / 65.0) * 60) # mins, @ 65 km/h highway
     fastest_fuel = round(fastest_dist * 0.12, 1) # 12L/100km high speed
-    fastest_cost = round(150 + (fastest_dist * 55) + 100, -1) # Toll fee included
+    fastest_cost = round(base * 1.1 + (fastest_dist * per_km * 1.1), -1) # Expressway multiplier
 
     routes = [
         {
