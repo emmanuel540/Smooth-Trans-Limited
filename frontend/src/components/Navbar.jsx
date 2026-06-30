@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { FaUserCircle, FaBars, FaTimes } from 'react-icons/fa';
+import { FaUserCircle, FaBars, FaTimes, FaSun, FaMoon } from 'react-icons/fa';
 import smoothLogo from '../assets/smooth_trans_logo.png';
 
 const Navbar = () => {
@@ -10,6 +10,14 @@ const Navbar = () => {
   const userString = localStorage.getItem('user');
   const user = userString ? JSON.parse(userString) : null;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [theme, setTheme] = useState(document.documentElement.getAttribute('data-theme') || 'light');
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -63,7 +71,6 @@ const Navbar = () => {
   const isActive = (tab) => {
     if (tab.path && location.pathname === tab.path) return true;
     if (tab.hash && location.pathname.includes('/dashboard/customer') && window.location.hash === `#${tab.hash}`) {
-      // If there's a specific service type query mapping, verify it (optional)
       return true;
     }
     return false;
@@ -74,8 +81,8 @@ const Navbar = () => {
       position: 'sticky',
       top: 0,
       zIndex: 1000,
-      background: '#ffffff',
-      borderBottom: '1px solid rgba(148, 163, 184, 0.12)',
+      background: 'var(--bg-surface-solid)',
+      borderBottom: '1px solid var(--border-light)',
       padding: '0 40px',
       display: 'flex',
       justifyContent: 'space-between',
@@ -97,7 +104,7 @@ const Navbar = () => {
         <span style={{
           fontSize: '1.25rem',
           fontWeight: 800,
-          color: '#1e3a8a',
+          color: 'var(--primary-blue)',
           letterSpacing: '-0.02em',
           fontFamily: 'var(--font-sans)'
         }}>Smooth Trans</span>
@@ -121,14 +128,13 @@ const Navbar = () => {
               onClick={() => {
                 if (tab.hash && token && user && user.role === 'passenger') {
                   window.location.hash = tab.hash;
-                  // If query parameter needs to trigger a service type
                   if (tab.query) {
                     window.dispatchEvent(new CustomEvent('changeServiceType', { detail: tab.query }));
                   }
                 }
               }}
               style={{
-                color: active ? '#1e3a8a' : '#64748b',
+                color: active ? 'var(--primary-blue)' : 'var(--text-muted)',
                 textDecoration: 'none',
                 fontWeight: 600,
                 fontSize: '0.92rem',
@@ -137,15 +143,15 @@ const Navbar = () => {
                 display: 'flex',
                 alignItems: 'center',
                 height: '100%',
-                borderBottom: active ? '2px solid #1e3a8a' : '2px solid transparent',
+                borderBottom: active ? '2px solid var(--primary-blue)' : '2px solid transparent',
                 padding: '0 4px',
                 marginTop: '2px'
               }}
               onMouseOver={(e) => {
-                if (!active) e.target.style.color = '#1e3a8a';
+                if (!active) e.target.style.color = 'var(--primary-blue)';
               }}
               onMouseOut={(e) => {
-                if (!active) e.target.style.color = '#64748b';
+                if (!active) e.target.style.color = 'var(--text-muted)';
               }}
             >
               {tab.name}
@@ -156,23 +162,47 @@ const Navbar = () => {
 
       {/* Right side buttons */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }} className="desktop-menu">
+        {/* Theme Toggle Button */}
+        <button 
+          onClick={toggleTheme}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            color: 'var(--text-primary)',
+            fontSize: '1.25rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '8px',
+            borderRadius: '50%',
+            transition: 'background 0.2s, color 0.2s',
+            outline: 'none'
+          }}
+          onMouseOver={(e) => e.currentTarget.style.background = 'var(--bg-link-hover)'}
+          onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+          title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
+        >
+          {theme === 'light' ? <FaMoon /> : <FaSun style={{ color: 'var(--accent-amber)' }} />}
+        </button>
+
         {token && user ? (
           <>
             <Link to={getDashboardLink()} style={{
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              color: '#1e3a8a',
+              color: 'var(--primary-blue)',
               textDecoration: 'none',
               fontWeight: 600,
               fontSize: '0.9rem',
               padding: '8px 16px',
               borderRadius: '10px',
-              background: '#f1f5f9',
+              background: 'var(--bg-active-link)',
               transition: 'background 0.2s'
             }}
-            onMouseOver={(e) => e.currentTarget.style.background = '#e2e8f0'}
-            onMouseOut={(e) => e.currentTarget.style.background = '#f1f5f9'}
+            onMouseOver={(e) => e.currentTarget.style.background = 'var(--border-light)'}
+            onMouseOut={(e) => e.currentTarget.style.background = 'var(--bg-active-link)'}
             >
               <FaUserCircle size={18} />
               <span>Dashboard ({user.name.split(' ')[0]})</span>
@@ -182,19 +212,19 @@ const Navbar = () => {
               fontSize: '0.9rem',
               borderRadius: '10px',
               background: 'transparent',
-              color: '#64748b',
-              border: '1px solid rgba(148, 163, 184, 0.3)',
+              color: 'var(--text-muted)',
+              border: '1px solid var(--border-light)',
               fontWeight: 600,
               cursor: 'pointer',
               transition: 'all 0.2s'
             }}
             onMouseOver={(e) => {
-              e.target.style.color = '#e11d48';
-              e.target.style.borderColor = '#e11d48';
+              e.target.style.color = 'var(--accent-rose)';
+              e.target.style.borderColor = 'var(--accent-rose)';
             }}
             onMouseOut={(e) => {
-              e.target.style.color = '#64748b';
-              e.target.style.borderColor = 'rgba(148, 163, 184, 0.3)';
+              e.target.style.color = 'var(--text-muted)';
+              e.target.style.borderColor = 'var(--border-light)';
             }}
             >
               Log Out
@@ -203,14 +233,14 @@ const Navbar = () => {
         ) : (
           <>
             <Link to="/login" style={{
-              color: '#64748b',
+              color: 'var(--text-muted)',
               textDecoration: 'none',
               fontWeight: 600,
               fontSize: '0.92rem',
               transition: 'color 0.2s'
             }}
-            onMouseOver={(e) => e.target.style.color = '#1e3a8a'}
-            onMouseOut={(e) => e.target.style.color = '#64748b'}
+            onMouseOver={(e) => e.target.style.color = 'var(--primary-blue)'}
+            onMouseOut={(e) => e.target.style.color = 'var(--text-muted)'}
             >
               Sign In
             </Link>
@@ -224,7 +254,6 @@ const Navbar = () => {
             padding: '10px 22px',
             fontSize: '0.9rem',
             borderRadius: '8px',
-            background: '#1e3a8a',
             fontWeight: 600,
             boxShadow: 'none'
           }}
@@ -234,7 +263,7 @@ const Navbar = () => {
       </div>
 
       {/* Mobile Burger Menu Button */}
-      <div style={{ display: 'none', cursor: 'pointer', color: '#1e3a8a' }} className="mobile-menu-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+      <div style={{ display: 'none', cursor: 'pointer', color: 'var(--primary-blue)' }} className="mobile-menu-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
         {mobileMenuOpen ? <FaTimes size={22} /> : <FaBars size={22} />}
       </div>
 
@@ -257,8 +286,8 @@ const Navbar = () => {
           top: '72px',
           left: 0,
           right: 0,
-          background: '#ffffff',
-          borderBottom: '1px solid rgba(148, 163, 184, 0.12)',
+          background: 'var(--bg-surface-solid)',
+          borderBottom: '1px solid var(--border-light)',
           padding: '24px 40px',
           display: 'flex',
           flexDirection: 'column',
@@ -282,7 +311,7 @@ const Navbar = () => {
                   }
                 }}
                 style={{
-                  color: '#1e3a8a',
+                  color: 'var(--primary-blue)',
                   textDecoration: 'none',
                   fontWeight: 600,
                   fontSize: '1.05rem'
@@ -292,22 +321,60 @@ const Navbar = () => {
               </Link>
             );
           })}
-          <hr style={{ borderColor: 'rgba(148, 163, 184, 0.1)' }} />
+          
+          <hr style={{ borderColor: 'var(--border-light)' }} />
+
+          {/* Theme toggler inside mobile menu */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.95rem' }}>Theme Mode</span>
+            <button 
+              onClick={toggleTheme}
+              style={{
+                background: 'var(--bg-active-link)',
+                border: 'none',
+                color: 'var(--text-primary)',
+                fontSize: '0.95rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '10px 16px',
+                borderRadius: '10px',
+                gap: '8px',
+                fontWeight: 600
+              }}
+            >
+              {theme === 'light' ? (
+                <>
+                  <FaMoon size={14} />
+                  <span>Dark Mode</span>
+                </>
+              ) : (
+                <>
+                  <FaSun size={14} style={{ color: 'var(--accent-amber)' }} />
+                  <span>Light Mode</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          <hr style={{ borderColor: 'var(--border-light)' }} />
+
           {token && user ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <Link to={getDashboardLink()} onClick={() => setMobileMenuOpen(false)} style={{ textDecoration: 'none', background: '#1e3a8a', color: '#ffffff', padding: '12px', borderRadius: '10px', textAlign: 'center', fontWeight: 600 }}>
+              <Link to={getDashboardLink()} onClick={() => setMobileMenuOpen(false)} style={{ textDecoration: 'none', background: 'var(--primary-blue)', color: '#ffffff', padding: '12px', borderRadius: '10px', textAlign: 'center', fontWeight: 600 }}>
                 Go to Dashboard
               </Link>
-              <button onClick={() => { handleLogout(); setMobileMenuOpen(false); }} style={{ background: 'transparent', color: '#e11d48', border: '1px solid #e11d48', padding: '12px', borderRadius: '10px', fontWeight: 600, cursor: 'pointer' }}>
+              <button onClick={() => { handleLogout(); setMobileMenuOpen(false); }} style={{ background: 'transparent', color: 'var(--accent-rose)', border: '1px solid var(--accent-rose)', padding: '12px', borderRadius: '10px', fontWeight: 600, cursor: 'pointer' }}>
                 Log Out
               </button>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <Link to="/login" onClick={() => setMobileMenuOpen(false)} style={{ textDecoration: 'none', background: 'transparent', color: '#1e3a8a', border: '1px solid #1e3a8a', padding: '12px', borderRadius: '10px', textAlign: 'center', fontWeight: 600 }}>
+              <Link to="/login" onClick={() => setMobileMenuOpen(false)} style={{ textDecoration: 'none', background: 'transparent', color: 'var(--primary-blue)', border: '1px solid var(--primary-blue)', padding: '12px', borderRadius: '10px', textAlign: 'center', fontWeight: 600 }}>
                 Sign In
               </Link>
-              <button onClick={() => { handleBookNow(); setMobileMenuOpen(false); }} style={{ background: '#1e3a8a', color: '#ffffff', border: 'none', padding: '12px', borderRadius: '10px', fontWeight: 600, cursor: 'pointer' }}>
+              <button onClick={() => { handleBookNow(); setMobileMenuOpen(false); }} style={{ background: 'var(--primary-blue)', color: '#ffffff', border: 'none', padding: '12px', borderRadius: '10px', fontWeight: 600, cursor: 'pointer' }}>
                 Book Now
               </button>
             </div>

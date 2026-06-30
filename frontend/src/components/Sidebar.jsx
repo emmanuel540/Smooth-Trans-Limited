@@ -3,7 +3,7 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { 
   FaChartPie, FaTruck, FaIdCard, FaMapMarkedAlt, 
   FaClipboardList, FaMoneyBillWave, FaSignOutAlt, 
-  FaFileAlt, FaHome, FaUser, FaShieldAlt, FaHeadphones,
+  FaFileAlt, FaHome, FaShieldAlt, FaHeadphones,
   FaCalendarCheck, FaPlus
 } from 'react-icons/fa';
 
@@ -66,7 +66,6 @@ const Sidebar = () => {
 
   const isLinkActive = (link) => {
     if (user.role === 'passenger' && link.hash) {
-      // If we are currently on the book tab, and clicking home, let's treat it as inactive unless matches book
       if (currentHash === '#book' && link.hash === '#home') return false;
       return currentHash === link.hash;
     }
@@ -76,8 +75,8 @@ const Sidebar = () => {
   return (
     <div className="sidebar" style={{ 
       padding: '24px 20px',
-      background: '#ffffff',
-      borderRight: '1px solid rgba(148, 163, 184, 0.12)',
+      background: 'var(--bg-surface-solid)',
+      borderRight: '1px solid var(--border-light)',
       display: 'flex',
       flexDirection: 'column',
       position: 'fixed',
@@ -92,7 +91,7 @@ const Sidebar = () => {
         <div style={{ 
           fontSize: '1.25rem', 
           fontWeight: 800, 
-          color: '#1e3a8a', 
+          color: 'var(--primary-blue)', 
           letterSpacing: '-0.02em',
           lineHeight: '1.2'
         }}>
@@ -100,7 +99,7 @@ const Sidebar = () => {
         </div>
         <div style={{ 
           fontSize: '0.75rem', 
-          color: '#64748b', 
+          color: 'var(--text-muted)', 
           fontWeight: 600, 
           marginTop: '2px',
           textTransform: 'uppercase',
@@ -112,10 +111,10 @@ const Sidebar = () => {
 
       {/* User profile capsule */}
       <div style={{
-        background: '#f8fafc',
+        background: 'var(--bg-main)',
         borderRadius: '12px',
         padding: '12px 16px',
-        border: '1px solid rgba(148, 163, 184, 0.12)',
+        border: '1px solid var(--border-light)',
         marginBottom: '24px'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -123,7 +122,7 @@ const Sidebar = () => {
             width: '32px',
             height: '32px',
             borderRadius: '50%',
-            background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
+            background: 'linear-gradient(135deg, var(--primary-blue) 0%, #3b82f6 100%)',
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
@@ -134,12 +133,12 @@ const Sidebar = () => {
             {user.name ? user.name.charAt(0) : 'U'}
           </div>
           <div style={{ overflow: 'hidden', flex: 1 }}>
-            <div style={{ fontWeight: 700, fontSize: '0.85rem', color: '#1e3a8a', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+            <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--primary-blue)', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
               {user.name}
             </div>
             <div style={{
               fontSize: '0.7rem',
-              color: '#64748b',
+              color: 'var(--text-muted)',
               textTransform: 'capitalize',
               fontWeight: 600
             }}>
@@ -160,7 +159,6 @@ const Sidebar = () => {
               onClick={() => {
                 if (user.role === 'passenger' && link.hash) {
                   window.location.hash = link.hash;
-                  // Dispatch hashchange event manually in case routing doesn't trigger
                   window.dispatchEvent(new HashChangeEvent('hashchange'));
                 }
               }}
@@ -168,8 +166,8 @@ const Sidebar = () => {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '12px',
-                color: active ? '#1e3a8a' : '#64748b',
-                background: active ? '#eff6ff' : 'transparent',
+                color: active ? 'var(--primary-blue)' : 'var(--text-secondary)',
+                background: active ? 'var(--bg-active-link)' : 'transparent',
                 textDecoration: 'none',
                 padding: '12px 16px',
                 borderRadius: '12px',
@@ -179,13 +177,13 @@ const Sidebar = () => {
               }}
               onMouseOver={(e) => {
                 if (!active) {
-                  e.currentTarget.style.color = '#1e3a8a';
-                  e.currentTarget.style.background = '#f8fafc';
+                  e.currentTarget.style.color = 'var(--primary-blue)';
+                  e.currentTarget.style.background = 'var(--bg-link-hover)';
                 }
               }}
               onMouseOut={(e) => {
                 if (!active) {
-                  e.currentTarget.style.color = '#64748b';
+                  e.currentTarget.style.color = 'var(--text-secondary)';
                   e.currentTarget.style.background = 'transparent';
                 }
               }}
@@ -194,7 +192,7 @@ const Sidebar = () => {
                 fontSize: '1.1rem', 
                 display: 'flex', 
                 alignItems: 'center',
-                color: active ? '#1e3a8a' : '#94a3b8',
+                color: active ? 'var(--primary-blue)' : 'var(--text-muted)',
                 transition: 'color 0.2s'
               }}>{link.icon}</span>
               <span>{link.name}</span>
@@ -208,7 +206,7 @@ const Sidebar = () => {
         display: 'flex', 
         flexDirection: 'column', 
         gap: '8px', 
-        borderTop: '1px solid rgba(148, 163, 184, 0.12)', 
+        borderTop: '1px solid var(--border-light)', 
         paddingTop: '20px',
         marginTop: 'auto'
       }}>
@@ -217,7 +215,7 @@ const Sidebar = () => {
             onClick={handleNewBooking}
             style={{
               width: '100%',
-              background: '#1e3a8a',
+              background: 'var(--primary-blue)',
               color: '#ffffff',
               border: 'none',
               borderRadius: '12px',
@@ -233,8 +231,8 @@ const Sidebar = () => {
               boxShadow: '0 4px 10px rgba(30, 58, 138, 0.1)',
               marginBottom: '8px'
             }}
-            onMouseOver={(e) => e.currentTarget.style.background = '#1e40af'}
-            onMouseOut={(e) => e.currentTarget.style.background = '#1e3a8a'}
+            onMouseOver={(e) => e.currentTarget.style.background = 'var(--border-active)'}
+            onMouseOut={(e) => e.currentTarget.style.background = 'var(--primary-blue)'}
           >
             <FaPlus size={12} />
             <span>New Booking</span>
@@ -247,7 +245,7 @@ const Sidebar = () => {
             display: 'flex',
             alignItems: 'center',
             gap: '12px',
-            color: '#64748b',
+            color: 'var(--text-muted)',
             background: 'transparent',
             border: 'none',
             cursor: 'pointer',
@@ -260,11 +258,11 @@ const Sidebar = () => {
             transition: 'all 0.2s'
           }}
           onMouseOver={(e) => {
-            e.currentTarget.style.color = '#e11d48';
-            e.currentTarget.style.background = '#fff1f2';
+            e.currentTarget.style.color = 'var(--accent-rose)';
+            e.currentTarget.style.background = 'var(--bg-danger-hover)';
           }}
           onMouseOut={(e) => {
-            e.currentTarget.style.color = '#64748b';
+            e.currentTarget.style.color = 'var(--text-muted)';
             e.currentTarget.style.background = 'transparent';
           }}
         >

@@ -7,6 +7,7 @@ import {
   FaWrench, FaRoute, FaArrowRight, FaShieldAlt
 } from 'react-icons/fa';
 import Navbar from '../components/Navbar';
+import MapTracker from '../components/MapTracker';
 
 const nairobiZones = [
   { name: 'Nairobi CBD', lat: -1.2921, lng: 36.8219 },
@@ -23,6 +24,8 @@ const Home = () => {
   const navigate = useNavigate();
   const [pickup, setPickup] = useState('');
   const [dropoff, setDropoff] = useState('');
+  const [pickupCoords, setPickupCoords] = useState(null);
+  const [dropoffCoords, setDropoffCoords] = useState(null);
   const [serviceType, setServiceType] = useState('General');
   const [estimation, setEstimation] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -34,6 +37,8 @@ const Home = () => {
     
     const startZone = nairobiZones.find(z => z.name === pickup);
     const endZone = nairobiZones.find(z => z.name === dropoff);
+    setPickupCoords({ lat: startZone.lat, lng: startZone.lng });
+    setDropoffCoords({ lat: endZone.lat, lng: endZone.lng });
     
     fetch('http://localhost:5000/api/bookings/estimate', {
       method: 'POST',
@@ -79,60 +84,75 @@ const Home = () => {
         alignItems: 'center'
       }} className="hero-split">
         
-        {/* Left Column: Premium Pitch */}
-        <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            background: 'rgba(30, 58, 138, 0.08)',
-            color: 'var(--primary-blue)',
-            padding: '6px 14px',
-            borderRadius: '20px',
-            fontSize: '0.8rem',
-            fontWeight: 700,
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
-            alignSelf: 'flex-start'
-          }}>
-            <FaShieldAlt />
-            <span>Safety Certified Logistics</span>
-          </div>
+        {/* Left Column: Premium Pitch or Route Map Preview */}
+        <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
+          {pickupCoords && dropoffCoords ? (
+            <div className="glass-card animate-fade-in" style={{ padding: '24px', height: '420px', display: 'flex', flexDirection: 'column', width: '100%', border: '1px solid var(--border-light)' }}>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--primary-blue)', marginBottom: '12px' }}>Interactive Route Preview</h3>
+              <div style={{ flex: 1, minHeight: '280px', borderRadius: '12px', overflow: 'hidden' }}>
+                <MapTracker 
+                  pickup={pickupCoords} 
+                  dropoff={dropoffCoords}
+                  height="100%"
+                />
+              </div>
+            </div>
+          ) : (
+            <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: 'var(--bg-active-link)',
+                color: 'var(--primary-blue)',
+                padding: '6px 14px',
+                borderRadius: '20px',
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                alignSelf: 'flex-start'
+              }}>
+                <FaShieldAlt />
+                <span>Safety Certified Logistics</span>
+              </div>
 
-          <h1 className="gradient-title gradient-text" style={{ 
-            fontSize: '3.6rem', 
-            lineHeight: '1.1',
-            fontWeight: 800
-          }}>
-            Logistics precision, engineered for peace of mind.
-          </h1>
+              <h1 className="gradient-title gradient-text" style={{ 
+                fontSize: '3.6rem', 
+                lineHeight: '1.1',
+                fontWeight: 800
+              }}>
+                Logistics precision, engineered for peace of mind.
+              </h1>
 
-          <p style={{ 
-            color: 'var(--text-secondary)', 
-            fontSize: '1.1rem', 
-            lineHeight: '1.6',
-            maxWidth: '550px' 
-          }}>
-            Optimize your transit corridors, pre-schedule student transportation, dispatch parcels in real-time, and monitor fleet telematics with state-of-the-art computational routing.
-          </p>
+              <p style={{ 
+                color: 'var(--text-secondary)', 
+                fontSize: '1.1rem', 
+                lineHeight: '1.6',
+                maxWidth: '550px' 
+              }}>
+                Optimize your transit corridors, pre-schedule student transportation, dispatch parcels in real-time, and monitor fleet telematics with state-of-the-art computational routing.
+              </p>
 
-          <div style={{ display: 'flex', gap: '16px', marginTop: '8px' }}>
-            <button 
-              onClick={handleGetStarted}
-              className="btn-primary"
-              style={{ padding: '14px 28px' }}
-            >
-              <span>Get Started</span>
-              <FaArrowRight size={14} />
-            </button>
-            <Link 
-              to="/login"
-              className="btn-secondary"
-              style={{ padding: '14px 28px' }}
-            >
-              <span>Read Safety Protocols</span>
-            </Link>
-          </div>
+              <div style={{ display: 'flex', gap: '16px', marginTop: '8px' }}>
+                <button 
+                  onClick={handleGetStarted}
+                  className="btn-primary"
+                  style={{ padding: '14px 28px' }}
+                >
+                  <span>Get Started</span>
+                  <FaArrowRight size={14} />
+                </button>
+                <Link 
+                  to="/login"
+                  className="btn-secondary"
+                  style={{ padding: '14px 28px' }}
+                >
+                  <span>Read Safety Protocols</span>
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right Column: Fare Estimator Card */}
@@ -153,7 +173,12 @@ const Home = () => {
                 <select 
                   className="glass-input" 
                   value={pickup} 
-                  onChange={(e) => setPickup(e.target.value)}
+                  onChange={(e) => {
+                    setPickup(e.target.value);
+                    const zone = nairobiZones.find(z => z.name === e.target.value);
+                    setPickupCoords(zone ? { lat: zone.lat, lng: zone.lng } : null);
+                    setEstimation(null);
+                  }}
                   required
                 >
                   <option value="">Select Pickup</option>
@@ -168,7 +193,12 @@ const Home = () => {
                 <select 
                   className="glass-input" 
                   value={dropoff} 
-                  onChange={(e) => setDropoff(e.target.value)}
+                  onChange={(e) => {
+                    setDropoff(e.target.value);
+                    const zone = nairobiZones.find(z => z.name === e.target.value);
+                    setDropoffCoords(zone ? { lat: zone.lat, lng: zone.lng } : null);
+                    setEstimation(null);
+                  }}
                   required
                 >
                   <option value="">Select Destination</option>

@@ -142,7 +142,8 @@ const CustomerDashboard = () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         pickup_coords: { lat: startZone.lat, lng: startZone.lng },
-        dropoff_coords: { lat: endZone.lat, lng: endZone.lng }
+        dropoff_coords: { lat: endZone.lat, lng: endZone.lng },
+        booking_type: bookingType
       })
     })
       .then(res => res.json())

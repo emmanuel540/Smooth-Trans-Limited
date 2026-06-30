@@ -82,6 +82,16 @@ const ChangeMapView = ({ pickup, dropoff, current }) => {
 };
 
 const MapTracker = ({ pickup, dropoff, current, routePath, height = '400px' }) => {
+  const [theme, setTheme] = React.useState(document.documentElement.getAttribute('data-theme') || 'light');
+
+  React.useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setTheme(document.documentElement.getAttribute('data-theme') || 'light');
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => observer.disconnect();
+  }, []);
+
   // Center map in Nairobi by default
   const defaultCenter = [-1.2921, 36.8219];
   const defaultZoom = 12;
@@ -99,8 +109,12 @@ const MapTracker = ({ pickup, dropoff, current, routePath, height = '400px' }) =
         style={{ height: '100%', width: '100%', borderRadius: '12px' }}
       >
         <TileLayer
+          key={theme}
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" // Premium dark map tiles
+          url={theme === 'dark' 
+            ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" 
+            : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+          }
         />
         
         {pickup && (
