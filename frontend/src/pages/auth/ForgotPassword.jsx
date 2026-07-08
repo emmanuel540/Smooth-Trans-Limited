@@ -76,17 +76,17 @@ const ForgotPassword = () => {
       alignItems: 'center',
       justifyContent: 'center',
       padding: '20px',
-      background: '#f5faff'
+      background: 'var(--bg-main)'
     }}>
       <div style={{
-        background: '#ffffff',
-        border: '1px solid rgba(43, 108, 176, 0.15)',
+        background: 'var(--bg-surface-solid)',
+        border: '1px solid var(--border-light)',
         borderRadius: '24px',
         padding: '40px',
         width: '100%',
         maxWidth: '440px',
         textAlign: 'center',
-        boxShadow: '0 10px 25px rgba(43, 108, 176, 0.05)'
+        boxShadow: 'var(--shadow-card)'
       }}>
         {/* Brand logo */}
         <Link to="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '25px' }}>

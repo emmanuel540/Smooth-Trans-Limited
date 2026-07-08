@@ -11,13 +11,14 @@ import MapTracker from '../components/MapTracker';
 
 const nairobiZones = [
   { name: 'Nairobi CBD', lat: -1.2921, lng: 36.8219 },
-  { name: 'Westlands', lat: -1.2682, lng: 36.8055 },
-  { name: 'Kilimani', lat: -1.2902, lng: 36.7865 },
-  { name: 'Karen', lat: -1.3201, lng: 36.7050 },
-  { name: 'Langata', lat: -1.3323, lng: 36.7681 },
-  { name: 'Eastleigh', lat: -1.2789, lng: 36.8489 },
-  { name: 'South C', lat: -1.3175, lng: 36.8290 },
-  { name: 'Industrial Area', lat: -1.3115, lng: 36.8520 }
+  { name: 'Kinoo / Kikuyu', lat: -1.2543, lng: 36.6817 },
+  { name: 'Kahawa West / Roysambu', lat: -1.2185, lng: 36.8885 },
+  { name: 'Ngong / Kabiria', lat: -1.3614, lng: 36.6565 },
+  { name: 'Juja', lat: -1.1833, lng: 37.0167 },
+  { name: 'Thika', lat: -1.0333, lng: 37.0692 },
+  { name: 'Makongeni', lat: -1.0455, lng: 37.0910 },
+  { name: 'Kibera', lat: -1.3130, lng: 36.7880 },
+  { name: 'Rongai', lat: -1.3962, lng: 36.7601 }
 ];
 
 const Home = () => {
@@ -46,6 +47,8 @@ const Home = () => {
       body: JSON.stringify({
         pickup_coords: { lat: startZone.lat, lng: startZone.lng },
         dropoff_coords: { lat: endZone.lat, lng: endZone.lng },
+        pickup_address: pickup,
+        dropoff_address: dropoff,
         booking_type: serviceType
       })
     })
@@ -254,7 +257,7 @@ const Home = () => {
       </section>
 
       {/* Features Grid */}
-      <section style={{ padding: '100px 20px', background: '#ffffff', borderTop: '1px solid rgba(148, 163, 184, 0.12)' }}>
+      <section style={{ padding: '100px 20px', background: 'var(--bg-surface-solid)', borderTop: '1px solid var(--border-light)' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', textAlign: 'center' }}>
           <h2 className="gradient-title gradient-text" style={{ fontSize: '2.5rem', marginBottom: '15px' }}>Core Platform Features</h2>
           <p style={{ color: 'var(--text-secondary)', marginBottom: '60px', maxWidth: '600px', margin: '0 auto 60px auto' }}>

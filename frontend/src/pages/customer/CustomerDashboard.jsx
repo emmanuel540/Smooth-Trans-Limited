@@ -15,13 +15,14 @@ import safetyBg from '../../assets/safety_bg.png';
 
 const nairobiZones = [
   { name: 'Nairobi CBD', lat: -1.2921, lng: 36.8219 },
-  { name: 'Westlands', lat: -1.2682, lng: 36.8055 },
-  { name: 'Kilimani', lat: -1.2902, lng: 36.7865 },
-  { name: 'Karen', lat: -1.3201, lng: 36.7050 },
-  { name: 'Langata', lat: -1.3323, lng: 36.7681 },
-  { name: 'Eastleigh', lat: -1.2789, lng: 36.8489 },
-  { name: 'South C', lat: -1.3175, lng: 36.8290 },
-  { name: 'Industrial Area', lat: -1.3115, lng: 36.8520 }
+  { name: 'Kinoo / Kikuyu', lat: -1.2543, lng: 36.6817 },
+  { name: 'Kahawa West / Roysambu', lat: -1.2185, lng: 36.8885 },
+  { name: 'Ngong / Kabiria', lat: -1.3614, lng: 36.6565 },
+  { name: 'Juja', lat: -1.1833, lng: 37.0167 },
+  { name: 'Thika', lat: -1.0333, lng: 37.0692 },
+  { name: 'Makongeni', lat: -1.0455, lng: 37.0910 },
+  { name: 'Kibera', lat: -1.3130, lng: 36.7880 },
+  { name: 'Rongai', lat: -1.3962, lng: 36.7601 }
 ];
 
 const mockVehicles = [
@@ -143,6 +144,8 @@ const CustomerDashboard = () => {
       body: JSON.stringify({
         pickup_coords: { lat: startZone.lat, lng: startZone.lng },
         dropoff_coords: { lat: endZone.lat, lng: endZone.lng },
+        pickup_address: pickup,
+        dropoff_address: dropoff,
         booking_type: bookingType
       })
     })
@@ -385,7 +388,7 @@ const CustomerDashboard = () => {
                     {optimizedRoutes.length > 0 && (
                       <div style={{ marginTop: '12px' }}>
                         <div style={{ fontSize: '0.85rem', color: 'var(--text-primary)', fontWeight: 700, marginBottom: '8px' }}>Optimized Route:</div>
-                        <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid rgba(148,163,184,0.12)' }}>
+                        <div style={{ background: 'var(--bg-main)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-light)' }}>
                           <div style={{ fontWeight: 700, color: 'var(--primary-blue)' }}>{optimizedRoutes[0].name}</div>
                           <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '2px' }}>{optimizedRoutes[0].description}</div>
                           <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary-teal)', marginTop: '8px' }}>
@@ -571,7 +574,7 @@ const CustomerDashboard = () => {
                 <div style={{ overflowX: 'auto' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                     <thead>
-                      <tr style={{ background: '#f8fafc', borderBottom: '1px solid rgba(148,163,184,0.12)' }}>
+                      <tr style={{ background: 'var(--bg-main)', borderBottom: '1px solid var(--border-light)' }}>
                         <th style={{ padding: '16px', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 700 }}>ID</th>
                         <th style={{ padding: '16px', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 700 }}>Service</th>
                         <th style={{ padding: '16px', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 700 }}>Route</th>
@@ -698,7 +701,7 @@ const CustomerDashboard = () => {
                 marginBottom: '32px'
               }}>
                 {/* Card 1 */}
-                <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '16px', background: '#ffffff' }}>
+                <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '16px', background: 'var(--bg-surface)' }}>
                   <div style={{
                     width: '44px',
                     height: '44px',
@@ -719,7 +722,7 @@ const CustomerDashboard = () => {
                 </div>
 
                 {/* Card 2 */}
-                <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '16px', background: '#ffffff' }}>
+                <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '16px', background: 'var(--bg-surface)' }}>
                   <div style={{
                     width: '44px',
                     height: '44px',
@@ -775,7 +778,7 @@ const CustomerDashboard = () => {
                 justifyContent: 'space-between', 
                 alignItems: 'center', 
                 gap: '24px',
-                background: '#ffffff',
+                background: 'var(--bg-surface)',
                 borderLeft: '4px solid #1e3a8a'
               }}>
                 <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
@@ -1032,7 +1035,7 @@ const CustomerDashboard = () => {
               background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(8px)', zIndex: 2000, display: 'flex',
               alignItems: 'center', justifyContent: 'center', padding: '20px'
             }}>
-              <div className="glass-card animate-slide-up" style={{ width: '100%', maxWidth: '400px', background: '#ffffff' }}>
+              <div className="glass-card animate-slide-up" style={{ width: '100%', maxWidth: '400px', background: 'var(--bg-surface-solid)' }}>
                 <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1e3a8a', marginBottom: '10px' }}>Authorize Billing</h3>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '20px' }}>
                   Complete payment of <strong>KES {payingBooking.fare}</strong> for Booking #{payingBooking.id}.
@@ -1107,7 +1110,7 @@ const CustomerDashboard = () => {
               background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(8px)', zIndex: 2000, display: 'flex',
               alignItems: 'center', justifyContent: 'center', padding: '20px'
             }}>
-              <div className="glass-card animate-slide-up" style={{ width: '100%', maxWidth: '480px', padding: '30px', background: '#ffffff' }}>
+              <div className="glass-card animate-slide-up" style={{ width: '100%', maxWidth: '480px', padding: '30px', background: 'var(--bg-surface-solid)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(148, 163, 184, 0.12)', paddingBottom: '15px', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1e3a8a' }}>Invoice Receipt</h3>
                   <button onClick={() => setReceiptData(null)} className="btn-secondary" style={{ padding: '2px 10px', fontSize: '0.8rem' }}><FaTimesCircle /></button>
@@ -1184,7 +1187,7 @@ const CustomerDashboard = () => {
               <div className="glass-card animate-slide-up" style={{ 
                 width: '100%', 
                 maxWidth: '440px', 
-                background: '#ffffff',
+                background: 'var(--bg-surface-solid)',
                 border: '2px solid var(--accent-rose)',
                 boxShadow: '0 25px 50px -12px rgba(225, 29, 72, 0.25)'
               }}>
