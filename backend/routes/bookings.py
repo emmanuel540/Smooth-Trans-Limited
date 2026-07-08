@@ -10,6 +10,37 @@ def calculate_distance(lat1, lng1, lat2, lng2):
     # Quick approximation of distance in km on a plane
     return math.sqrt((lat2 - lat1)**2 + (lng2 - lng1)**2) * 111.0
 
+NAIROBI_ZONES = [
+    { 'name': 'Nairobi CBD', 'lat': -1.2921, 'lng': 36.8219 },
+    { 'name': 'Kinoo / Kikuyu', 'lat': -1.2543, 'lng': 36.6817 },
+    { 'name': 'Kahawa West / Roysambu', 'lat': -1.2185, 'lng': 36.8885 },
+    { 'name': 'Ngong / Kabiria', 'lat': -1.3614, 'lng': 36.6565 },
+    { 'name': 'Juja', 'lat': -1.1833, 'lng': 37.0167 },
+    { 'name': 'Thika', 'lat': -1.0333, 'lng': 37.0692 },
+    { 'name': 'Makongeni', 'lat': -1.0455, 'lng': 37.0910 },
+    { 'name': 'Kibera', 'lat': -1.3130, 'lng': 36.7880 },
+    { 'name': 'Rongai', 'lat': -1.3962, 'lng': 36.7601 }
+]
+
+PUBLIC_FARES = {
+    'Kinoo / Kikuyu': {'min': 50, 'max': 80, 'avg': 65},
+    'Kahawa West / Roysambu': {'min': 50, 'max': 70, 'avg': 60},
+    'Ngong / Kabiria': {'min': 80, 'max': 100, 'avg': 90},
+    'Juja': {'min': 100, 'max': 110, 'avg': 105},
+    'Thika': {'min': 110, 'max': 120, 'avg': 115},
+    'Makongeni': {'min': 120, 'max': 130, 'avg': 125},
+    'Kibera': {'min': 50, 'max': 70, 'avg': 60},
+    'Rongai': {'min': 80, 'max': 100, 'avg': 90}
+}
+
+def find_zone_name(lat, lng):
+    if lat is None or lng is None:
+        return None
+    for zone in NAIROBI_ZONES:
+        if abs(lat - zone['lat']) < 0.001 and abs(lng - zone['lng']) < 0.001:
+            return zone['name']
+    return None
+
 @bookings_bp.route('/estimate', methods=['POST'])
 def estimate_fare():
     data = request.get_json() or {}
@@ -36,10 +67,24 @@ def estimate_fare():
         'Moving': {'base': 3000, 'per_km': 150}
     }
 
-    type_rate = rates.get(booking_type, rates['General'])
-    fare = type_rate['base'] + (distance_km * type_rate['per_km'])
-    # Round to nearest 10
-    fare = round(fare, -1)
+    # Public transport custom fare logic
+    fare = None
+    if booking_type == 'General':
+        p_addr = data.get('pickup_address') or find_zone_name(lat1, lng1)
+        d_addr = data.get('dropoff_address') or find_zone_name(lat2, lng2)
+        
+        if p_addr == 'Nairobi CBD' and d_addr in PUBLIC_FARES:
+            fare = PUBLIC_FARES[d_addr]['avg']
+        elif d_addr == 'Nairobi CBD' and p_addr in PUBLIC_FARES:
+            fare = PUBLIC_FARES[p_addr]['avg']
+        elif p_addr in PUBLIC_FARES and d_addr in PUBLIC_FARES:
+            fare = PUBLIC_FARES[p_addr]['avg'] + PUBLIC_FARES[d_addr]['avg']
+
+    if fare is None:
+        type_rate = rates.get(booking_type, rates['General'])
+        fare = type_rate['base'] + (distance_km * type_rate['per_km'])
+        # Round to nearest 10
+        fare = round(fare, -1)
 
     return jsonify({
         'distance_km': round(distance_km, 2),
@@ -75,8 +120,23 @@ def create_booking():
         'Delivery': {'base': 100, 'per_km': 40},
         'Moving': {'base': 3000, 'per_km': 150}
     }
-    type_rate = rates.get(booking_type, rates['General'])
-    fare = round(type_rate['base'] + (distance_km * type_rate['per_km']), -1)
+    
+    # Public transport custom fare logic
+    fare = None
+    if booking_type == 'General':
+        p_addr = pickup_address or find_zone_name(lat1, lng1)
+        d_addr = dropoff_address or find_zone_name(lat2, lng2)
+        
+        if p_addr == 'Nairobi CBD' and d_addr in PUBLIC_FARES:
+            fare = PUBLIC_FARES[d_addr]['avg']
+        elif d_addr == 'Nairobi CBD' and p_addr in PUBLIC_FARES:
+            fare = PUBLIC_FARES[p_addr]['avg']
+        elif p_addr in PUBLIC_FARES and d_addr in PUBLIC_FARES:
+            fare = PUBLIC_FARES[p_addr]['avg'] + PUBLIC_FARES[d_addr]['avg']
+
+    if fare is None:
+        type_rate = rates.get(booking_type, rates['General'])
+        fare = round(type_rate['base'] + (distance_km * type_rate['per_km']), -1)
 
     try:
         pickup_time = datetime.fromisoformat(pickup_time_str) if pickup_time_str else datetime.utcnow()

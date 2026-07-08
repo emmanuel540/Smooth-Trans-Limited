@@ -6,6 +6,37 @@ import math
 
 ai_bp = Blueprint('ai', __name__)
 
+NAIROBI_ZONES = [
+    { 'name': 'Nairobi CBD', 'lat': -1.2921, 'lng': 36.8219 },
+    { 'name': 'Kinoo / Kikuyu', 'lat': -1.2543, 'lng': 36.6817 },
+    { 'name': 'Kahawa West / Roysambu', 'lat': -1.2185, 'lng': 36.8885 },
+    { 'name': 'Ngong / Kabiria', 'lat': -1.3614, 'lng': 36.6565 },
+    { 'name': 'Juja', 'lat': -1.1833, 'lng': 37.0167 },
+    { 'name': 'Thika', 'lat': -1.0333, 'lng': 37.0692 },
+    { 'name': 'Makongeni', 'lat': -1.0455, 'lng': 37.0910 },
+    { 'name': 'Kibera', 'lat': -1.3130, 'lng': 36.7880 },
+    { 'name': 'Rongai', 'lat': -1.3962, 'lng': 36.7601 }
+]
+
+PUBLIC_FARES = {
+    'Kinoo / Kikuyu': {'min': 50, 'max': 80, 'avg': 65},
+    'Kahawa West / Roysambu': {'min': 50, 'max': 70, 'avg': 60},
+    'Ngong / Kabiria': {'min': 80, 'max': 100, 'avg': 90},
+    'Juja': {'min': 100, 'max': 110, 'avg': 105},
+    'Thika': {'min': 110, 'max': 120, 'avg': 115},
+    'Makongeni': {'min': 120, 'max': 130, 'avg': 125},
+    'Kibera': {'min': 50, 'max': 70, 'avg': 60},
+    'Rongai': {'min': 80, 'max': 100, 'avg': 90}
+}
+
+def find_zone_name(lat, lng):
+    if lat is None or lng is None:
+        return None
+    for zone in NAIROBI_ZONES:
+        if abs(lat - zone['lat']) < 0.001 and abs(lng - zone['lng']) < 0.001:
+            return zone['name']
+    return None
+
 # Helper to generate simulated path between two coordinates for map display
 def generate_route_path(start, end, deviation_factor=0.0):
     steps = 15
@@ -67,19 +98,43 @@ def optimize_route():
     shortest_dist = round(direct_dist, 2)
     shortest_time = round((shortest_dist / 40.0) * 60) # mins, @ 40 km/h average city speed
     shortest_fuel = round(shortest_dist * 0.10, 1) # 10L/100km
-    shortest_cost = round(base + (shortest_dist * per_km), -1)
 
-    # 2. Cheapest Fuel (slightly longer distance, but bypasses traffic and hills for better mileage)
+    # 2. Cheapest Fuel
     cheapest_dist = round(direct_dist * 1.12, 2)
-    cheapest_time = round((cheapest_dist / 48.0) * 60) # mins, smoother speed
-    cheapest_fuel = round(cheapest_dist * 0.075, 1) # 7.5L/100km eco mode
-    cheapest_cost = round(base + (cheapest_dist * per_km * 0.8), -1) # Lower fuel surcharge multiplier
+    cheapest_time = round((cheapest_dist / 48.0) * 60)
+    cheapest_fuel = round(cheapest_dist * 0.075, 1)
 
-    # 3. Fastest Route (Express highway/bypass - longer, but higher speed limit)
+    # 3. Fastest Route
     fastest_dist = round(direct_dist * 1.25, 2)
-    fastest_time = round((fastest_dist / 65.0) * 60) # mins, @ 65 km/h highway
-    fastest_fuel = round(fastest_dist * 0.12, 1) # 12L/100km high speed
-    fastest_cost = round(base * 1.1 + (fastest_dist * per_km * 1.1), -1) # Expressway multiplier
+    fastest_time = round((fastest_dist / 65.0) * 60)
+    fastest_fuel = round(fastest_dist * 0.12, 1)
+
+    # Calculate customized fare costs
+    shortest_cost = None
+    cheapest_cost = None
+    fastest_cost = None
+
+    if booking_type == 'General':
+        p_addr = data.get('pickup_address') or find_zone_name(lat1, lng1)
+        d_addr = data.get('dropoff_address') or find_zone_name(lat2, lng2)
+        
+        if p_addr == 'Nairobi CBD' and d_addr in PUBLIC_FARES:
+            cheapest_cost = PUBLIC_FARES[d_addr]['min']
+            shortest_cost = PUBLIC_FARES[d_addr]['avg']
+            fastest_cost = PUBLIC_FARES[d_addr]['max']
+        elif d_addr == 'Nairobi CBD' and p_addr in PUBLIC_FARES:
+            cheapest_cost = PUBLIC_FARES[p_addr]['min']
+            shortest_cost = PUBLIC_FARES[p_addr]['avg']
+            fastest_cost = PUBLIC_FARES[p_addr]['max']
+        elif p_addr in PUBLIC_FARES and d_addr in PUBLIC_FARES:
+            cheapest_cost = PUBLIC_FARES[p_addr]['min'] + PUBLIC_FARES[d_addr]['min']
+            shortest_cost = PUBLIC_FARES[p_addr]['avg'] + PUBLIC_FARES[d_addr]['avg']
+            fastest_cost = PUBLIC_FARES[p_addr]['max'] + PUBLIC_FARES[d_addr]['max']
+
+    if shortest_cost is None:
+        shortest_cost = round(base + (shortest_dist * per_km), -1)
+        cheapest_cost = round(base + (cheapest_dist * per_km * 0.8), -1)
+        fastest_cost = round(base * 1.1 + (fastest_dist * per_km * 1.1), -1)
 
     routes = [
         {

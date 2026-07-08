@@ -5,7 +5,12 @@ from flask_bcrypt import Bcrypt
 db = SQLAlchemy()
 bcrypt = Bcrypt()
 
-class User(db.Model):
+class BaseModel(db.Model):
+    __abstract__ = True
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+class User(BaseModel):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -38,7 +43,7 @@ class User(db.Model):
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
 
-class DriverProfile(db.Model):
+class DriverProfile(BaseModel):
     __tablename__ = 'driver_profiles'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -66,7 +71,7 @@ class DriverProfile(db.Model):
             'vehicle': self.vehicle.to_dict() if self.vehicle else None
         }
 
-class Vehicle(db.Model):
+class Vehicle(BaseModel):
     __tablename__ = 'vehicles'
     id = db.Column(db.Integer, primary_key=True)
     plate_number = db.Column(db.String(20), unique=True, nullable=False)
@@ -99,7 +104,7 @@ class Vehicle(db.Model):
             'assigned_driver': self.driver.user.name if (self.driver and self.driver.user) else None
         }
 
-class Booking(db.Model):
+class Booking(BaseModel):
     __tablename__ = 'bookings'
     id = db.Column(db.Integer, primary_key=True)
     customer_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -142,7 +147,7 @@ class Booking(db.Model):
             'payment_status': self.payments[0].status if self.payments else 'Unpaid'
         }
 
-class Payment(db.Model):
+class Payment(BaseModel):
     __tablename__ = 'payments'
     id = db.Column(db.Integer, primary_key=True)
     booking_id = db.Column(db.Integer, db.ForeignKey('bookings.id'), nullable=False)
@@ -165,7 +170,7 @@ class Payment(db.Model):
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
 
-class MaintenanceLog(db.Model):
+class MaintenanceLog(BaseModel):
     __tablename__ = 'maintenance_logs'
     id = db.Column(db.Integer, primary_key=True)
     vehicle_id = db.Column(db.Integer, db.ForeignKey('vehicles.id'), nullable=False)
@@ -184,7 +189,7 @@ class MaintenanceLog(db.Model):
             'current_mileage': self.current_mileage
         }
 
-class Notification(db.Model):
+class Notification(BaseModel):
     __tablename__ = 'notifications'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -203,7 +208,7 @@ class Notification(db.Model):
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
 
-class TripProgress(db.Model):
+class TripProgress(BaseModel):
     __tablename__ = 'trip_progress'
     id = db.Column(db.Integer, primary_key=True)
     booking_id = db.Column(db.Integer, db.ForeignKey('bookings.id'), nullable=False)
