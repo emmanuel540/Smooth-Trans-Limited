@@ -156,6 +156,8 @@ class Payment(BaseModel):
     status = db.Column(db.String(20), default='Pending') # Pending, Completed, Failed
     transaction_id = db.Column(db.String(50), unique=True, nullable=True)
     invoice_no = db.Column(db.String(50), unique=True, nullable=False)
+    checkout_request_id = db.Column(db.String(100), nullable=True)
+    merchant_request_id = db.Column(db.String(100), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def to_dict(self):
@@ -167,6 +169,8 @@ class Payment(BaseModel):
             'status': self.status,
             'transaction_id': self.transaction_id,
             'invoice_no': self.invoice_no,
+            'checkout_request_id': self.checkout_request_id,
+            'merchant_request_id': self.merchant_request_id,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
 
