@@ -8,10 +8,11 @@ import {
   FaPhoneAlt, FaCreditCard, FaMapPin, FaShieldAlt, 
   FaWrench, FaHeadphones, FaPlus, FaExclamationTriangle,
   FaCar, FaGasPump, FaBatteryThreeQuarters, FaCogs,
-  FaLock, FaCheck, FaTimesCircle, FaEye
+  FaLock, FaCheck, FaTimesCircle, FaEye, FaUserCircle
 } from 'react-icons/fa';
 
 import safetyBg from '../../assets/safety_bg.png';
+import heroVan from '../../assets/hero_van.png';
 
 const nairobiZones = [
   { name: 'Nairobi CBD', lat: -1.2921, lng: 36.8219 },
@@ -66,6 +67,10 @@ const CustomerDashboard = () => {
   const [cardNo, setCardNo] = useState('');
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [paymentStatusText, setPaymentStatusText] = useState('');
+  const [isPolling, setIsPolling] = useState(false);
+  const [isMockMpesa, setIsMockMpesa] = useState(false);
+  const [stkCheckoutId, setStkCheckoutId] = useState('');
 
   // Tracking State
   const [trackingBooking, setTrackingBooking] = useState(null);
@@ -105,8 +110,8 @@ const CustomerDashboard = () => {
     
     return () => {
       window.removeEventListener('hashchange', handleHashChange);
-      if (trackingIntervalId) clearInterval(trackingIntervalId);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Listen for customized navbar triggers
@@ -205,10 +210,14 @@ const CustomerDashboard = () => {
       });
   };
 
-  // Process Mock Payment
+  // Process M-Pesa or Card payment
   const handlePaymentSubmit = (e) => {
     e.preventDefault();
     setPaymentLoading(true);
+    setPaymentStatusText('Initiating payment transaction...');
+    setIsPolling(false);
+    setIsMockMpesa(false);
+    setStkCheckoutId('');
 
     fetch('http://localhost:5000/api/payments/pay', {
       method: 'POST',
@@ -229,19 +238,110 @@ const CustomerDashboard = () => {
         return data;
       })
       .then(data => {
-        setPaymentSuccess(true);
-        setPaymentLoading(false);
-        setTimeout(() => {
-          setPayingBooking(null);
-          setPaymentSuccess(false);
-          setPhoneNo('');
-          setCardNo('');
-          fetchBookings();
-        }, 2000);
+        if (paymentMethod === 'MPesa') {
+          setIsPolling(true);
+          setIsMockMpesa(data.is_mock || false);
+          setStkCheckoutId(data.checkout_request_id || '');
+          setPaymentStatusText('Waiting for M-Pesa PIN input on your phone...');
+          
+          let pollAttempts = 0;
+          const maxPollAttempts = 30; // 60 seconds (2s interval)
+          
+          const pollInterval = setInterval(() => {
+            pollAttempts++;
+            if (pollAttempts > maxPollAttempts) {
+              clearInterval(pollInterval);
+              setIsPolling(false);
+              setPaymentLoading(false);
+              setPaymentStatusText('');
+              alert("Payment confirmation timed out. Please check your transaction status later.");
+              return;
+            }
+            
+            fetch(`http://localhost:5000/api/payments/status/${payingBooking.id}`, {
+              headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            })
+              .then(res => res.json())
+              .then(statusData => {
+                if (statusData.status === 'Completed') {
+                  clearInterval(pollInterval);
+                  setIsPolling(false);
+                  setPaymentSuccess(true);
+                  setPaymentLoading(false);
+                  setPaymentStatusText('');
+                  setTimeout(() => {
+                    setPayingBooking(null);
+                    setPaymentSuccess(false);
+                    setPhoneNo('');
+                    setCardNo('');
+                    fetchBookings();
+                  }, 2000);
+                } else if (statusData.status === 'Failed') {
+                  clearInterval(pollInterval);
+                  setIsPolling(false);
+                  setPaymentLoading(false);
+                  setPaymentStatusText('');
+                  alert("M-Pesa payment was rejected or failed.");
+                }
+              })
+              .catch(err => {
+                console.error("Polling error:", err);
+              });
+          }, 2000);
+          
+          // Save interval on payingBooking
+          payingBooking._pollInterval = pollInterval;
+        } else {
+          setPaymentSuccess(true);
+          setPaymentLoading(false);
+          setPaymentStatusText('');
+          setTimeout(() => {
+            setPayingBooking(null);
+            setPaymentSuccess(false);
+            setPhoneNo('');
+            setCardNo('');
+            fetchBookings();
+          }, 2000);
+        }
       })
       .catch(err => {
         alert(err.message || "Payment processing failed. Please try again.");
         setPaymentLoading(false);
+        setPaymentStatusText('');
+      });
+  };
+
+  const closePaymentModal = () => {
+    if (payingBooking && payingBooking._pollInterval) {
+      clearInterval(payingBooking._pollInterval);
+    }
+    setPayingBooking(null);
+    setIsPolling(false);
+    setPaymentLoading(false);
+    setPaymentStatusText('');
+    setPhoneNo('');
+    setCardNo('');
+  };
+
+  const handleSimulateMockPayment = () => {
+    if (!stkCheckoutId) return;
+    setPaymentStatusText('Simulating M-Pesa payment webhook callback...');
+    fetch('http://localhost:5000/api/payments/callback-mock', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        checkout_request_id: stkCheckoutId,
+        status: 'Completed'
+      })
+    })
+      .then(res => res.json())
+      .then(data => {
+        console.log("Mock callback simulated successfully:", data);
+      })
+      .catch(err => {
+        console.error("Error simulating mock callback:", err);
       });
   };
 
@@ -296,9 +396,11 @@ const CustomerDashboard = () => {
     }, 2000);
   };
 
-  const getUnpaidCount = () => bookings.filter(b => b.payment_status !== 'Completed').length;
-  const getActiveCount = () => bookings.filter(b => b.status === 'Active' || b.status === 'In Progress').length;
+  const getUnpaidCount    = () => bookings.filter(b => b.payment_status !== 'Completed').length;
+  const getActiveCount    = () => bookings.filter(b => b.status === 'Active' || b.status === 'In Progress').length;
   const getCompletedCount = () => bookings.filter(b => b.status === 'Completed').length;
+  const getActiveBooking  = () => bookings.find(b => b.status === 'Active' || b.status === 'In Progress');
+  const getTotalSpent     = () => bookings.filter(b => b.payment_status === 'Completed').reduce((sum, b) => sum + (parseFloat(b.fare) || 0), 0);
 
   return (
     <div style={{ background: 'var(--bg-main)', minHeight: '100vh' }}>
@@ -307,130 +409,263 @@ const CustomerDashboard = () => {
         <Sidebar />
         <div className="main-content">
 
-          {/* Tab CONTENT: HOME OVERVIEW */}
-          {activeTab === 'home' && (
-            <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h1 className="gradient-title gradient-text" style={{ fontSize: '2rem' }}>Welcome Back, {user.name.split(' ')[0]}!</h1>
-                  <p style={{ color: 'var(--text-secondary)', marginTop: '4px' }}>Here is your quick logistics command panel overview.</p>
-                </div>
-                <button 
-                  onClick={() => window.location.hash = '#book'}
-                  className="btn-primary"
-                  style={{ gap: '8px' }}
-                >
-                  <FaPlus />
-                  <span>Request Transport</span>
-                </button>
-              </div>
+          {/* ════════════════════════════════════════
+               Tab CONTENT: HOME OVERVIEW (Redesigned)
+          ════════════════════════════════════════ */}
+          {activeTab === 'home' && (() => {
+            const activeBooking = getActiveBooking();
+            const totalSpent    = getTotalSpent();
+            const recentBookings = bookings.slice(0, 4);
+            const serviceIcons  = { General: <FaCar />, School: <FaClipboardList />, Delivery: <FaRoute />, Moving: <FaMoneyCheckAlt /> };
 
-              {/* Statistics Grid */}
-              <div className="stats-grid">
-                <div className="glass-card stat-card" style={{ borderLeft: '4px solid var(--primary-blue)' }}>
-                  <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Active In-Transit</span>
-                  <div className="stat-val">{getActiveCount()}</div>
-                  <span style={{ fontSize: '0.78rem', color: 'var(--primary-blue)', fontWeight: 600 }}>Vehicles live tracking</span>
-                </div>
-                <div className="glass-card stat-card" style={{ borderLeft: '4px solid var(--accent-amber)' }}>
-                  <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Pending Payments</span>
-                  <div className="stat-val" style={{ color: 'var(--accent-amber)' }}>{getUnpaidCount()}</div>
-                  <span style={{ fontSize: '0.78rem', color: 'var(--accent-amber)', fontWeight: 600 }}>Awaiting billing approval</span>
-                </div>
-                <div className="glass-card stat-card" style={{ borderLeft: '4px solid var(--primary-teal)' }}>
-                  <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Total Completed</span>
-                  <div className="stat-val" style={{ color: 'var(--primary-teal)' }}>{getCompletedCount()}</div>
-                  <span style={{ fontSize: '0.78rem', color: 'var(--primary-teal)', fontWeight: 600 }}>Safely delivered orders</span>
-                </div>
-              </div>
+            return (
+              <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
-              {/* Fare Estimator & Map side by side */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 0.9fr', gap: '30px' }} className="book-layout">
-                {/* Fare Estimator */}
-                <div className="glass-card">
-                  <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary-blue)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <FaCompass style={{ color: 'var(--primary-blue)' }} />
-                    <span>Fare & Route Estimator</span>
-                  </h3>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-                    <div>
-                      <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px', fontWeight: 700 }}>Pickup Location</label>
-                      <select className="glass-input" value={pickup} onChange={(e) => setPickup(e.target.value)}>
-                        <option value="">Select pickup zone</option>
-                        {nairobiZones.map(z => <option key={z.name} value={z.name}>{z.name}</option>)}
-                      </select>
+                {/* ── Hero Banner ── */}
+                <div style={{
+                  background: '#0F1B2D', borderRadius: '16px',
+                  padding: '36px 40px', display: 'flex',
+                  justifyContent: 'space-between', alignItems: 'flex-end',
+                  overflow: 'hidden', position: 'relative', minHeight: '190px'
+                }}>
+                  <div style={{ zIndex: 1, maxWidth: '55%' }}>
+                    <h1 style={{
+                      fontSize: '2.2rem', fontWeight: 700, color: '#ffffff',
+                      fontFamily: 'var(--font-serif)', lineHeight: '1.2', marginBottom: '8px'
+                    }}>
+                      Hello, {user.name.split(' ')[0]}!
+                    </h1>
+                    <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.88rem', marginBottom: '22px' }}>
+                      Welcome back to your transport command centre.
+                    </p>
+                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                      <button
+                        onClick={() => { window.location.hash = '#book'; window.dispatchEvent(new HashChangeEvent('hashchange')); }}
+                        style={{
+                          background: '#ffffff', color: '#0F1B2D', border: 'none',
+                          borderRadius: '7px', padding: '9px 18px', fontWeight: 600,
+                          fontSize: '0.85rem', cursor: 'pointer', fontFamily: 'var(--font-sans)', transition: 'opacity 0.15s'
+                        }}
+                        onMouseOver={(e) => e.currentTarget.style.opacity = '0.88'}
+                        onMouseOut={(e)  => e.currentTarget.style.opacity = '1'}
+                      >
+                        New Booking
+                      </button>
+                      <button
+                        onClick={() => { window.location.hash = '#bookings'; window.dispatchEvent(new HashChangeEvent('hashchange')); }}
+                        style={{
+                          background: 'transparent', color: '#ffffff',
+                          border: '1.5px solid rgba(255,255,255,0.3)',
+                          borderRadius: '7px', padding: '9px 18px', fontWeight: 600,
+                          fontSize: '0.85rem', cursor: 'pointer', fontFamily: 'var(--font-sans)', transition: 'border-color 0.15s'
+                        }}
+                        onMouseOver={(e) => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.65)'}
+                        onMouseOut={(e)  => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'}
+                      >
+                        View Schedule
+                      </button>
                     </div>
-                    <div>
-                      <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px', fontWeight: 700 }}>Destination Location</label>
-                      <select className="glass-input" value={dropoff} onChange={(e) => setDropoff(e.target.value)}>
-                        <option value="">Select destination zone</option>
-                        {nairobiZones.map(z => <option key={z.name} value={z.name}>{z.name}</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px', fontWeight: 700 }}>Service Type</label>
-                      <select className="glass-input" value={bookingType} onChange={(e) => setBookingType(e.target.value)}>
-                        <option value="General">General Transport</option>
-                        <option value="School">School Transit</option>
-                        <option value="Delivery">Parcel Delivery</option>
-                        <option value="Moving">Moving / Relocation</option>
-                      </select>
-                    </div>
-                    <button 
-                      onClick={handleOptimizeRoute} 
-                      disabled={!pickup || !dropoff || optLoading} 
-                      className="btn-primary"
-                      style={{ marginTop: '10px' }}
-                    >
-                      {optLoading ? <div className="loader-spinner"></div> : 'Analyze Route Options'}
-                    </button>
+                  </div>
+                  <img
+                    src={heroVan}
+                    alt="Transport Vehicle"
+                    style={{
+                      height: '160px', objectFit: 'cover', position: 'absolute',
+                      right: 0, bottom: 0, borderBottomRightRadius: '16px',
+                      opacity: 0.9, maxWidth: '45%'
+                    }}
+                  />
+                </div>
 
-                    {optimizedRoutes.length > 0 && (
-                      <div style={{ marginTop: '12px' }}>
-                        <div style={{ fontSize: '0.85rem', color: 'var(--text-primary)', fontWeight: 700, marginBottom: '8px' }}>Optimized Route:</div>
-                        <div style={{ background: 'var(--bg-main)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-light)' }}>
-                          <div style={{ fontWeight: 700, color: 'var(--primary-blue)' }}>{optimizedRoutes[0].name}</div>
-                          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '2px' }}>{optimizedRoutes[0].description}</div>
-                          <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary-teal)', marginTop: '8px' }}>
-                            KES {optimizedRoutes[0].cost_kes}
+                {/* ── Active Trip + Summary ── */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 290px', gap: '20px', alignItems: 'start' }} className="home-trip-grid">
+
+                  {/* Active Trip Card */}
+                  <div style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #E2E8F0', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                    <h2 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#0F1B2D', marginBottom: '16px' }}>Active Trip</h2>
+
+                    {activeBooking ? (
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                        {/* Left: Map */}
+                        <div style={{
+                          background: '#F8FAFC', borderRadius: '10px', border: '1px solid #E2E8F0',
+                          minHeight: '190px', position: 'relative', overflow: 'hidden'
+                        }}>
+                          <div style={{
+                            position: 'absolute', top: '10px', left: '10px', zIndex: 10,
+                            background: '#10B981', color: 'white', padding: '3px 9px',
+                            borderRadius: '20px', fontSize: '0.68rem', fontWeight: 700,
+                            display: 'flex', alignItems: 'center', gap: '5px'
+                          }}>
+                            <span style={{ width: '5px', height: '5px', background: 'white', borderRadius: '50%', display: 'inline-block' }} />
+                            Live Tracking Active
                           </div>
+                          {activeBooking.pickup_coords && activeBooking.dropoff_coords && (
+                            <MapTracker pickup={activeBooking.pickup_coords} dropoff={activeBooking.dropoff_coords} height="100%" />
+                          )}
                         </div>
+
+                        {/* Right: Vehicle + Driver */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                          <div>
+                            <span style={{ fontSize: '0.62rem', color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em' }}>Vehicle Detail</span>
+                            <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0F1B2D', marginTop: '2px' }}>{activeBooking.vehicle_plate || 'Assigning...'}</div>
+                            <span style={{ background: '#10B981', color: 'white', padding: '2px 8px', borderRadius: '4px', fontSize: '0.62rem', fontWeight: 700, display: 'inline-block', marginTop: '5px' }}>IN TRANSIT</span>
+                          </div>
+                          <div>
+                            <span style={{ fontSize: '0.62rem', color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em' }}>Driver</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '7px' }}>
+                              <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: '#E8EDF6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#475569', flexShrink: 0 }}>
+                                <FaUserCircle size={17} />
+                              </div>
+                              <div>
+                                <div style={{ fontWeight: 600, fontSize: '0.82rem', color: '#0F1B2D' }}>{activeBooking.driver_name || 'Being assigned'}</div>
+                                <div style={{ fontSize: '0.7rem', color: '#94A3B8' }}>4.9 ★ Rating</div>
+                              </div>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => startTracking(activeBooking)}
+                            style={{
+                              background: '#0F1B2D', color: 'white', border: 'none',
+                              borderRadius: '7px', padding: '9px 14px', fontWeight: 600,
+                              fontSize: '0.8rem', cursor: 'pointer', display: 'flex',
+                              alignItems: 'center', justifyContent: 'center', gap: '6px',
+                              fontFamily: 'var(--font-sans)', marginTop: 'auto', transition: 'opacity 0.15s'
+                            }}
+                            onMouseOver={(e) => e.currentTarget.style.opacity = '0.82'}
+                            onMouseOut={(e)  => e.currentTarget.style.opacity = '1'}
+                          >
+                            <FaMapMarkerAlt size={12} /> Live Tracking
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ textAlign: 'center', padding: '32px 16px', color: '#94A3B8', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+                        <FaCar size={26} style={{ color: '#CBD5E1' }} />
+                        <div style={{ fontWeight: 600, fontSize: '0.88rem', color: '#475569' }}>No Active Trips</div>
+                        <div style={{ fontSize: '0.8rem' }}>Book a transport service to get started</div>
+                        <button
+                          onClick={() => { window.location.hash = '#book'; window.dispatchEvent(new HashChangeEvent('hashchange')); }}
+                          style={{
+                            marginTop: '8px', background: '#0F1B2D', color: 'white', border: 'none',
+                            borderRadius: '7px', padding: '8px 18px', fontWeight: 600,
+                            fontSize: '0.8rem', cursor: 'pointer', fontFamily: 'var(--font-sans)'
+                          }}
+                        >New Booking</button>
                       </div>
                     )}
                   </div>
-                </div>
 
-                {/* Info Card */}
-                <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                  <h3 style={{ fontSize: '1.2rem', fontWeight: 700 }}>Intelligent Fleet Platform</h3>
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.92rem', lineHeight: '1.6' }}>
-                    Smooth Trans uses automated path analysis to bypass high traffic corridors. 
-                    Get real-time ETAs, calculate distance tariffs automatically, and track vehicle progress interactively.
-                  </p>
-                  <div style={{ background: '#eff6ff', borderRadius: '12px', padding: '16px', border: '1px solid rgba(30, 58, 138, 0.08)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <FaShieldAlt style={{ color: 'var(--primary-blue)', fontSize: '1.5rem' }} />
+                  {/* Summary Cards */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+
+                    {/* Total Spent */}
+                    <div style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #E2E8F0', padding: '16px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
                       <div>
-                        <div style={{ fontWeight: 700, color: '#1e3a8a', fontSize: '0.9rem' }}>Safety Certified Transport</div>
-                        <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '2px' }}>All trips are backed by our continuous operations command center.</div>
+                        <span style={{ fontSize: '0.62rem', color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em' }}>Total Spent</span>
+                        <div style={{ fontSize: '1.35rem', fontWeight: 700, color: '#0F1B2D', marginTop: '3px', letterSpacing: '-0.02em' }}>KES {totalSpent.toLocaleString()}</div>
+                      </div>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <FaRegFileAlt size={15} style={{ color: '#475569' }} />
                       </div>
                     </div>
+
+                    {/* Total Trips */}
+                    <div style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #E2E8F0', padding: '16px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                      <div>
+                        <span style={{ fontSize: '0.62rem', color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em' }}>Total Trips</span>
+                        <div style={{ fontSize: '1.35rem', fontWeight: 700, color: '#0F1B2D', marginTop: '3px', letterSpacing: '-0.02em' }}>{bookings.length}</div>
+                      </div>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <FaMapMarkerAlt size={15} style={{ color: '#475569' }} />
+                      </div>
+                    </div>
+
+                    {/* Loyalty Status */}
+                    <div style={{ background: '#0F1B2D', borderRadius: '12px', padding: '16px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.45)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em' }}>Loyalty Status</span>
+                        <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#ffffff', marginTop: '3px' }}>Platinum Member</div>
+                      </div>
+                      <span style={{ color: '#10B981', fontSize: '1.4rem' }}>★</span>
+                    </div>
                   </div>
-                  <button 
-                    onClick={() => window.location.hash = '#safety'} 
-                    className="btn-secondary" 
-                    style={{ alignSelf: 'flex-start', marginTop: 'auto' }}
-                  >
-                    View Safety Protocols &rarr;
-                  </button>
                 </div>
+
+                {/* ── Recent Bookings Table ── */}
+                <div style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #E2E8F0', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                  <div style={{ padding: '16px 22px', borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <h3 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#0F1B2D' }}>Recent Bookings</h3>
+                    <button
+                      onClick={() => { window.location.hash = '#bookings'; window.dispatchEvent(new HashChangeEvent('hashchange')); }}
+                      style={{ background: 'transparent', border: 'none', color: '#475569', cursor: 'pointer', fontWeight: 600, fontSize: '0.8rem', fontFamily: 'var(--font-sans)' }}
+                    >View All →</button>
+                  </div>
+
+                  {recentBookings.length > 0 ? (
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead>
+                        <tr style={{ background: '#F8FAFC' }}>
+                          {['Date', 'Service Type', 'Amount', 'Status', 'Action'].map(col => (
+                            <th key={col} style={{ padding: '9px 20px', fontSize: '0.67rem', color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', textAlign: 'left' }}>{col}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {recentBookings.map((b) => (
+                          <tr key={b.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                            <td style={{ padding: '13px 20px', fontSize: '0.83rem', color: '#475569' }}>
+                              {b.created_at ? new Date(b.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : `#${b.id}`}
+                            </td>
+                            <td style={{ padding: '13px 20px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ color: '#94A3B8', fontSize: '0.95rem' }}>{serviceIcons[b.booking_type] || <FaCar />}</span>
+                                <span style={{ fontWeight: 600, fontSize: '0.83rem', color: '#0F1B2D' }}>{b.booking_type}</span>
+                              </div>
+                            </td>
+                            <td style={{ padding: '13px 20px', fontWeight: 600, fontSize: '0.83rem', color: '#0F1B2D' }}>KES {b.fare}</td>
+                            <td style={{ padding: '13px 20px' }}>
+                              <span style={{
+                                background: b.payment_status === 'Completed' ? '#D1FAE5' : '#FEF9C3',
+                                color:      b.payment_status === 'Completed' ? '#065F46' : '#92400E',
+                                padding: '3px 9px', borderRadius: '20px', fontSize: '0.67rem', fontWeight: 700, textTransform: 'uppercase'
+                              }}>
+                                {b.payment_status === 'Completed' ? 'COMPLETED' : 'PENDING'}
+                              </span>
+                            </td>
+                            <td style={{ padding: '13px 20px' }}>
+                              {b.payment_status === 'Completed' ? (
+                                <button onClick={() => viewReceipt(b.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8', padding: '4px', borderRadius: '4px', transition: 'color 0.15s' }}
+                                  onMouseOver={(e) => e.currentTarget.style.color = '#0F1B2D'}
+                                  onMouseOut={(e)  => e.currentTarget.style.color = '#94A3B8'}>
+                                  <FaRegFileAlt size={15} />
+                                </button>
+                              ) : (
+                                <button onClick={() => setPayingBooking(b)} style={{ background: '#0F1B2D', color: 'white', border: 'none', borderRadius: '5px', padding: '5px 10px', fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
+                                  Pay
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <div style={{ textAlign: 'center', padding: '28px', color: '#94A3B8', fontSize: '0.85rem' }}>
+                      No bookings yet.{' '}
+                      <button onClick={() => { window.location.hash = '#book'; window.dispatchEvent(new HashChangeEvent('hashchange')); }} style={{ background: 'none', border: 'none', color: '#0F1B2D', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: '0.85rem' }}>Create your first booking →</button>
+                    </div>
+                  )}
+                </div>
+
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* Tab CONTENT: BOOK SERVICE */}
           {activeTab === 'book' && (
-            <div className="animate-fade-in" style={{ display: 'grid', gridTemplateColumns: '1.1fr 0.9fr', gap: '30px' }} className="book-layout">
+            <div className="animate-fade-in book-layout" style={{ display: 'grid', gridTemplateColumns: '1.1fr 0.9fr', gap: '30px' }}>
               {/* Booking Form */}
               <div className="glass-card">
                 <h2 className="gradient-title gradient-text" style={{ fontSize: '1.5rem', marginBottom: '25px', display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -902,7 +1137,7 @@ const CustomerDashboard = () => {
 
           {/* Tab CONTENT: SUPPORT PANEL */}
           {activeTab === 'support' && (
-            <div className="animate-fade-in" style={{ display: 'grid', gridTemplateColumns: '1.1fr 0.9fr', gap: '30px' }} className="book-layout">
+            <div className="animate-fade-in book-layout" style={{ display: 'grid', gridTemplateColumns: '1.1fr 0.9fr', gap: '30px' }}>
               {/* Ticket Form */}
               <div className="glass-card">
                 <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1e3a8a', marginBottom: '20px' }}>Submit Support Inquiry</h2>
@@ -948,7 +1183,7 @@ const CustomerDashboard = () => {
 
           {/* Tab CONTENT: LIVE TRACKING */}
           {activeTab === 'tracking' && trackingBooking && (
-            <div className="animate-fade-in" style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '30px' }} className="track-layout">
+            <div className="animate-fade-in track-layout" style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '30px' }}>
               <div className="glass-card" style={{ display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                   <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1e3a8a' }}>Live Dispatch Tracking</h2>
@@ -1047,6 +1282,32 @@ const CustomerDashboard = () => {
                     <h4 style={{ fontWeight: 700, color: 'var(--text-primary)' }}>Transaction Successful!</h4>
                     <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '4px' }}>Billing invoice updated.</p>
                   </div>
+                ) : isPolling ? (
+                  <div style={{ textAlign: 'center', padding: '25px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px' }}>
+                    <div className="loader-spinner" style={{ width: '40px', height: '40px', borderWidth: '4px', margin: '0 auto', borderColor: 'var(--primary-teal) transparent transparent' }}></div>
+                    <h4 style={{ fontWeight: 700, color: 'var(--text-primary)', marginTop: '10px' }}>M-Pesa Verification</h4>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textAlign: 'center', padding: '0 15px' }}>
+                      {paymentStatusText}
+                    </p>
+                    {isMockMpesa && (
+                      <button 
+                        type="button" 
+                        onClick={handleSimulateMockPayment} 
+                        className="btn-primary" 
+                        style={{ marginTop: '15px', padding: '8px 16px', background: 'var(--primary-teal)', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: '600' }}
+                      >
+                        Simulate Success Callback
+                      </button>
+                    )}
+                    <button 
+                      type="button" 
+                      onClick={closePaymentModal} 
+                      className="btn-secondary" 
+                      style={{ marginTop: '15px', width: '100%' }}
+                    >
+                      Cancel Payment
+                    </button>
+                  </div>
                 ) : (
                   <form onSubmit={handlePaymentSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                     <div>
@@ -1092,7 +1353,7 @@ const CustomerDashboard = () => {
                     )}
 
                     <div style={{ display: 'flex', gap: '15px', marginTop: '10px' }}>
-                      <button type="button" onClick={() => setPayingBooking(null)} className="btn-secondary" style={{ flex: 1 }}>Cancel</button>
+                      <button type="button" onClick={closePaymentModal} className="btn-secondary" style={{ flex: 1 }}>Cancel</button>
                       <button type="submit" className="btn-primary" disabled={paymentLoading} style={{ flex: 1 }}>
                         {paymentLoading ? <div className="loader-spinner"></div> : 'Confirm Payment'}
                       </button>

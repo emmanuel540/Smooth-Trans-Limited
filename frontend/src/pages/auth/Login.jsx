@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaEnvelope, FaLock, FaCheck } from 'react-icons/fa';
-import smoothLogo from '../../assets/smooth_trans_logo.png';
+import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaFingerprint, FaQrcode } from 'react-icons/fa';
+import stLogo from '../../assets/st_logo.png';
 
 const Login = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [email, setEmail]             = useState('');
+  const [password, setPassword]       = useState('');
+  const [error, setError]             = useState('');
+  const [loading, setLoading]         = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [selectedRole, setSelectedRole] = useState('passenger');
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -22,26 +24,20 @@ const Login = () => {
     })
       .then(async (res) => {
         const data = await res.json();
-        if (!res.ok) {
-          throw new Error(data.message || 'Login failed');
-        }
+        if (!res.ok) throw new Error(data.message || 'Login failed');
         return data;
       })
       .then((data) => {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        if (data.driver_profile) {
-          localStorage.setItem('driver_profile', JSON.stringify(data.driver_profile));
-        }
+        if (data.driver_profile) localStorage.setItem('driver_profile', JSON.stringify(data.driver_profile));
 
-        // Redirect based on role
         const roleRedirects = {
           passenger: '/dashboard/customer',
           driver: '/dashboard/driver',
           dispatcher: '/dashboard/dispatcher',
           admin: '/dashboard/admin'
         };
-        
         navigate(roleRedirects[data.user.role] || '/');
       })
       .catch((err) => {
@@ -50,150 +46,246 @@ const Login = () => {
       });
   };
 
-  const fillCredentials = (role) => {
-    if (role === 'admin') {
-      setEmail('admin@smooth.co.ke');
-      setPassword('password123');
-    } else if (role === 'passenger') {
-      setEmail('alex@gmail.com');
-      setPassword('password123');
+  const selectRole = (role) => {
+    setSelectedRole(role);
+    setError('');
+    const creds = {
+      passenger: { email: 'alex@gmail.com',        password: 'password123' },
+      driver:    { email: 'driver@smooth.co.ke',   password: 'password123' },
+      admin:     { email: 'admin@smooth.co.ke',    password: 'password123' },
+    };
+    if (creds[role]) {
+      setEmail(creds[role].email);
+      setPassword(creds[role].password);
     }
   };
+
+  const roles = [
+    { key: 'passenger', label: 'Passenger' },
+    { key: 'driver',    label: 'Driver' },
+    { key: 'admin',     label: 'Admin' },
+  ];
 
   return (
     <div style={{
       minHeight: '100vh',
       display: 'flex',
+      flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '20px',
-      background: 'var(--bg-main)'
+      padding: '32px 20px',
+      background: '#F0F4FA',
+      fontFamily: 'var(--font-sans)'
     }}>
+
+      {/* ── Logo ── */}
+      <Link to="/" style={{ textDecoration: 'none', marginBottom: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div style={{
+          width: '64px', height: '64px', background: '#ffffff', borderRadius: '12px',
+          display: 'flex', justifyContent: 'center', alignItems: 'center',
+          border: '1.5px solid #E2E8F0', boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+        }}>
+          <img src={stLogo} alt="Smooth Trans" style={{ width: '56px', height: '56px', objectFit: 'contain' }} />
+        </div>
+      </Link>
+
+      {/* ── Heading ── */}
+      <h1 style={{ fontSize: '1.875rem', fontWeight: 700, color: '#0F1B2D', letterSpacing: '-0.02em', marginBottom: '6px' }}>
+        Welcome Back
+      </h1>
+      <p style={{ fontSize: '0.875rem', color: '#64748B', marginBottom: '28px', textAlign: 'center', maxWidth: '340px' }}>
+        Log in to your account to manage your transport services.
+      </p>
+
+      {/* ── Card ── */}
       <div style={{
-        background: 'var(--bg-surface-solid)',
-        border: '1px solid var(--border-light)',
-        borderRadius: '24px',
-        padding: '40px',
-        width: '100%',
-        maxWidth: '440px',
-        textAlign: 'center',
-        boxShadow: 'var(--shadow-card)'
+        background: '#ffffff', border: '1px solid #E2E8F0',
+        borderRadius: '12px', padding: '28px 28px',
+        width: '100%', maxWidth: '420px',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.06)'
       }}>
-        {/* Brand logo */}
-        <Link to="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '25px' }}>
-          <div style={{
-            background: 'var(--primary-blue)',
-            width: '36px',
-            height: '36px',
-            borderRadius: '10px',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            color: '#ffffff'
-          }}>
-            <img src={smoothLogo} alt="Logo" style={{ width: '26px', height: '26px' }} />
+
+        {/* Role Selector */}
+        <div style={{ marginBottom: '22px' }}>
+          <div style={{ fontSize: '0.67rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: '9px' }}>
+            Select Your Role
           </div>
-          <span style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--primary-blue)', textTransform: 'uppercase' }}>Smooth Trans</span>
-        </Link>
+          <div style={{
+            display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
+            background: '#F1F5F9', borderRadius: '8px', padding: '3px', gap: '3px'
+          }}>
+            {roles.map(({ key, label }) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => selectRole(key)}
+                style={{
+                  padding: '8px 4px', borderRadius: '6px', border: 'none',
+                  background: selectedRole === key ? '#ffffff' : 'transparent',
+                  color: selectedRole === key ? '#0F1B2D' : '#64748B',
+                  fontWeight: selectedRole === key ? 600 : 500,
+                  fontSize: '0.82rem', cursor: 'pointer', transition: 'all 0.15s',
+                  boxShadow: selectedRole === key ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                  fontFamily: 'var(--font-sans)'
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
 
-        <h2 style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--primary-blue)', marginBottom: '25px' }}>Sign In</h2>
-
+        {/* Error */}
         {error && (
           <div style={{
-            background: 'var(--bg-danger-hover)',
-            border: '1px solid var(--accent-rose)',
-            color: 'var(--accent-rose)',
-            padding: '12px',
-            borderRadius: '8px',
-            fontSize: '0.85rem',
-            marginBottom: '20px',
-            textAlign: 'left',
-            fontWeight: 600
+            background: '#FEE2E2', border: '1px solid rgba(225,29,72,0.2)',
+            color: '#991B1B', padding: '10px 14px', borderRadius: '7px',
+            fontSize: '0.82rem', marginBottom: '16px', fontWeight: 500
           }}>
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div style={{ textAlign: 'left' }}>
-            <input 
-              type="email" 
-              className="glass-input" 
-              placeholder="E-mail"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required 
-            />
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+
+          {/* Email */}
+          <div>
+            <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#475569', display: 'block', marginBottom: '6px' }}>
+              Email Address
+            </label>
+            <div style={{ position: 'relative' }}>
+              <FaEnvelope style={{
+                position: 'absolute', left: '13px', top: '50%', transform: 'translateY(-50%)',
+                color: '#94A3B8', fontSize: '0.8rem', pointerEvents: 'none'
+              }} />
+              <input
+                type="email"
+                className="glass-input"
+                placeholder="name@smooth-trans.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                style={{ paddingLeft: '36px' }}
+              />
+            </div>
           </div>
 
-          <div style={{ textAlign: 'left' }}>
-            <input 
-              type="password" 
-              className="glass-input" 
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required 
-            />
+          {/* Password */}
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#475569' }}>Password</label>
+              <Link to="/forgot-password" style={{ fontSize: '0.76rem', color: '#10B981', textDecoration: 'none', fontWeight: 600 }}>
+                Forgot Password?
+              </Link>
+            </div>
+            <div style={{ position: 'relative' }}>
+              <FaLock style={{
+                position: 'absolute', left: '13px', top: '50%', transform: 'translateY(-50%)',
+                color: '#94A3B8', fontSize: '0.8rem', pointerEvents: 'none'
+              }} />
+              <input
+                type={showPassword ? 'text' : 'password'}
+                className="glass-input"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                style={{ paddingLeft: '36px', paddingRight: '42px' }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)',
+                  background: 'none', border: 'none', color: '#94A3B8',
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0
+                }}
+              >
+                {showPassword ? <FaEyeSlash size={14} /> : <FaEye size={14} />}
+              </button>
+            </div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Link to="/forgot-password" style={{ fontSize: '0.85rem', color: 'var(--primary-blue)', textDecoration: 'none', fontWeight: 600 }}>
-              Forgot Password?
-            </Link>
-          </div>
-
-          <button type="submit" className="btn-primary" disabled={loading} style={{ width: '100%', padding: '12px', fontSize: '1rem', cursor: 'pointer' }}>
-            {loading ? <div className="loader-spinner" style={{ margin: '0 auto' }}></div> : 'Sign In'}
+          {/* Sign In Button */}
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: '100%', padding: '12px', background: '#0F1B2D', color: '#ffffff',
+              border: 'none', borderRadius: '7px', fontWeight: 700, fontSize: '0.875rem',
+              cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.65 : 1,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+              fontFamily: 'var(--font-sans)', letterSpacing: '0.05em',
+              transition: 'opacity 0.15s', marginTop: '4px'
+            }}
+            onMouseOver={(e) => { if (!loading) e.currentTarget.style.opacity = '0.85'; }}
+            onMouseOut={(e)  => { if (!loading) e.currentTarget.style.opacity = '1'; }}
+          >
+            {loading ? (
+              <div className="loader-spinner" />
+            ) : (
+              <>
+                <span>SIGN IN</span>
+                <span style={{
+                  width: '15px', height: '15px',
+                  border: '2px solid rgba(255,255,255,0.45)',
+                  borderRadius: '50%', display: 'inline-block', flexShrink: 0
+                }} />
+              </>
+            )}
           </button>
         </form>
 
-        <div style={{ marginTop: '25px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Quick access shortcuts:</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-            <button 
-              type="button" 
-              onClick={() => fillCredentials('passenger')}
-              style={{
-                background: 'var(--bg-active-link)',
-                border: '1px solid var(--primary-blue)',
-                color: 'var(--primary-blue)',
-                borderRadius: '8px',
-                padding: '8px',
-                fontSize: '0.8rem',
-                fontWeight: 600,
-                cursor: 'pointer'
-              }}
-            >
-              Fill Passenger
-            </button>
-            <button 
-              type="button" 
-              onClick={() => fillCredentials('admin')}
-              style={{
-                background: 'var(--bg-active-link)',
-                border: '1px solid var(--primary-blue)',
-                color: 'var(--primary-blue)',
-                borderRadius: '8px',
-                padding: '8px',
-                fontSize: '0.8rem',
-                fontWeight: 600,
-                cursor: 'pointer'
-              }}
-            >
-              Fill Admin
-            </button>
-          </div>
+        {/* OR divider */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '20px 0' }}>
+          <div style={{ flex: 1, height: '1px', background: '#E2E8F0' }} />
+          <span style={{ fontSize: '0.72rem', color: '#94A3B8', fontWeight: 500 }}>OR</span>
+          <div style={{ flex: 1, height: '1px', background: '#E2E8F0' }} />
         </div>
 
-        <div style={{ marginTop: '30px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-          Don't have an account?{' '}
-          <Link to="/register" style={{ color: 'var(--primary-blue)', textDecoration: 'underline', fontWeight: 600 }}>Sign up</Link>
+        {/* Alt Options */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+          {[
+            { label: 'Biometrics', Icon: FaFingerprint },
+            { label: 'Quick Scan', Icon: FaQrcode },
+          ].map(({ label, Icon }) => (
+            <button
+              key={label}
+              type="button"
+              style={{
+                padding: '10px 8px', background: 'transparent',
+                border: '1.5px solid #E2E8F0', borderRadius: '7px',
+                color: '#475569', fontWeight: 500, fontSize: '0.82rem',
+                cursor: 'pointer', display: 'flex', alignItems: 'center',
+                justifyContent: 'center', gap: '7px',
+                fontFamily: 'var(--font-sans)', transition: 'border-color 0.15s'
+              }}
+              onMouseOver={(e) => e.currentTarget.style.borderColor = '#94A3B8'}
+              onMouseOut={(e)  => e.currentTarget.style.borderColor = '#E2E8F0'}
+            >
+              <Icon size={13} />
+              {label}
+            </button>
+          ))}
         </div>
+      </div>
 
-        <div style={{ marginTop: '20px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-          <a href="#" style={{ color: 'var(--text-muted)', textDecoration: 'underline' }}>Learn user licence agreement</a>
-        </div>
+      {/* ── Register Link ── */}
+      <div style={{ marginTop: '20px', fontSize: '0.875rem', color: '#64748B', textAlign: 'center' }}>
+        Don't have an account?{' '}
+        <Link to="/register" style={{ color: '#0F1B2D', fontWeight: 700, textDecoration: 'none' }}>
+          Register New Account
+        </Link>
+      </div>
+
+      {/* ── Footer ── */}
+      <div style={{
+        marginTop: '36px', paddingTop: '16px',
+        borderTop: '1px solid #E2E8F0', width: '100%', maxWidth: '420px',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+      }}>
+        <span style={{ fontSize: '0.78rem', color: '#94A3B8', fontWeight: 600 }}>Smooth Trans</span>
+        <span style={{ fontSize: '0.72rem', color: '#94A3B8' }}>Sophisticated Utility in Motion.</span>
       </div>
     </div>
   );
