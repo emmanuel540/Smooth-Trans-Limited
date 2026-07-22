@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../../components/Sidebar';
 import MapTracker from '../../components/MapTracker';
-import { FaClipboardList, FaMapMarkedAlt, FaTruck, FaIdCard, FaUserPlus, FaChevronRight } from 'react-icons/fa';
+import { FaClipboardList, FaMapMarkedAlt, FaTruck, FaIdCard, FaUserPlus, FaChevronRight, FaCompass } from 'react-icons/fa';
 
 const DispatcherDashboard = () => {
   const [activeTab, setActiveTab] = useState('board'); // board, monitor

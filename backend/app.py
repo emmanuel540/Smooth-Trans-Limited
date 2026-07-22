@@ -13,6 +13,7 @@ from backend.models import db, bcrypt
 from backend.config import Config
 
 # Import blueprints
+
 from backend.routes.auth import auth_bp
 from backend.routes.bookings import bookings_bp
 from backend.routes.fleet import fleet_bp
@@ -22,6 +23,32 @@ from backend.routes.tracking import tracking_bp
 from backend.routes.ai_features import ai_bp
 from backend.routes.analytics import analytics_bp
 
+
+def init_db(app):
+    """Create all tables and seed the default admin user if not present."""
+    with app.app_context():
+        db.create_all()
+        try:
+            from backend.models import User
+            if not User.query.filter_by(role='admin').first():
+                new_admin = User(
+                    name="Admin User",
+                    email="admin@smooth.co.ke",
+                    role="admin",
+                    phone="0700000000",
+                    is_verified=True
+                )
+                new_admin.set_password("admin123")
+                db.session.add(new_admin)
+                db.session.commit()
+                print("[DB] Seeded admin user: admin@smooth.co.ke / admin123")
+        except Exception as e:
+            print(f"[DB] WARNING: Failed to seed admin user: {e}")
+
+
+
+
+
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
@@ -29,21 +56,29 @@ def create_app(config_class=Config):
     # Initialize extensions
     db.init_app(app)
     bcrypt.init_app(app)
-    
+
     # Configure CORS to allow frontend requests
     CORS(app, resources={r"/api/*": {"origins": "*"}})
-    
-    # Initialize JWT Manager
+
+    # Initialize JWT Manager and attach standard error handlers
     jwt = JWTManager(app)
 
+    @jwt.unauthorized_loader
+    def unauthorized_response(callback):
+        return jsonify({"message": "Missing or invalid token"}), 401
+
+    @jwt.expired_token_loader
+    def expired_token_response(jwt_header, jwt_payload):
+        return jsonify({"message": "Token has expired"}), 401
+
     # Register Blueprints
-    app.register_blueprint(auth_bp, url_prefix='/api/auth')
-    app.register_blueprint(bookings_bp, url_prefix='/api/bookings')
-    app.register_blueprint(fleet_bp, url_prefix='/api/fleet')
-    app.register_blueprint(drivers_bp, url_prefix='/api/drivers')
-    app.register_blueprint(payments_bp, url_prefix='/api/payments')
-    app.register_blueprint(tracking_bp, url_prefix='/api/tracking')
-    app.register_blueprint(ai_bp, url_prefix='/api/ai')
+    app.register_blueprint(auth_bp,      url_prefix='/api/auth')
+    app.register_blueprint(bookings_bp,  url_prefix='/api/bookings')
+    app.register_blueprint(fleet_bp,     url_prefix='/api/fleet')
+    app.register_blueprint(drivers_bp,   url_prefix='/api/drivers')
+    app.register_blueprint(payments_bp,  url_prefix='/api/payments')
+    app.register_blueprint(tracking_bp,  url_prefix='/api/tracking')
+    app.register_blueprint(ai_bp,        url_prefix='/api/ai')
     app.register_blueprint(analytics_bp, url_prefix='/api/analytics')
 
     @app.route('/', methods=['GET'])
@@ -60,29 +95,11 @@ def create_app(config_class=Config):
             'name': 'Smooth Trans Limited API Server'
         }), 200
 
-    # Create tables
-    with app.app_context():
-        db.create_all()
-        # Seed an admin user if not exists
-        try:
-            from backend.models import User
-            admin = User.query.filter_by(role='admin').first()
-            if not admin:
-                new_admin = User(
-                    name="Admin User",
-                    email="admin@smooth.co.ke",
-                    role="admin",
-                    phone="0700000000",
-                    is_verified=True
-                )
-                new_admin.set_password("admin123")
-                db.session.add(new_admin)
-                db.session.commit()
-                print("Seeded admin user: admin@smooth.co.ke / admin123")
-        except Exception as e:
-            print(f"Failed to seed admin user: {e}")
+    # Always initialise DB — runs whether started via python app.py or WSGI
+    init_db(app)
 
     return app
+
 
 if __name__ == '__main__':
     app = create_app()

@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from backend.models import db, Vehicle, Booking
+from backend.models import db, Vehicle
 from datetime import datetime, timedelta
 import random
 import math

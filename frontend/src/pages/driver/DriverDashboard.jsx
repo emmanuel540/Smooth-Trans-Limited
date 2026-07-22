@@ -3,7 +3,7 @@ import Sidebar from '../../components/Sidebar';
 import MapTracker from '../../components/MapTracker';
 import { 
   FaClipboardList, FaTruck, FaMoneyBillWave, 
-  FaPlay, FaCheckCircle, FaExclamationTriangle, FaCompass 
+  FaPlay, FaCheckCircle, FaExclamationTriangle 
 } from 'react-icons/fa';
 
 const DriverDashboard = () => {
