@@ -8,7 +8,7 @@ const DriverProfiles = () => {
 
   const fetchDrivers = () => {
     setLoading(true);
-    fetch('http://localhost:5000/api/drivers', {
+    fetch('/api/drivers', {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
     })
       .then(res => res.json())
@@ -92,7 +92,7 @@ const DriverProfiles = () => {
                   onClick={() => {
                     const stars = prompt("Enter mock feedback rating (1 to 5 stars) for " + d.name + ":");
                     if (stars && parseFloat(stars) >= 1 && parseFloat(stars) <= 5) {
-                      fetch(`http://localhost:5000/api/drivers/${d.user_id}/rating`, {
+                      fetch(`/api/drivers/${d.user_id}/rating`, {
                         method: 'POST',
                         headers: {
                           'Content-Type': 'application/json',

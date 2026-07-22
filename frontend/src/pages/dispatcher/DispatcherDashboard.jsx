@@ -20,19 +20,19 @@ const DispatcherDashboard = () => {
     const authHeader = { 'Authorization': `Bearer ${localStorage.getItem('token')}` };
 
     // Fetch Bookings
-    fetch('http://localhost:5000/api/bookings', { headers: authHeader })
+    fetch('/api/bookings', { headers: authHeader })
       .then(res => res.json())
       .then(data => setBookings(data))
       .catch(err => console.error(err));
 
     // Fetch Available Drivers
-    fetch('http://localhost:5000/api/drivers', { headers: authHeader })
+    fetch('/api/drivers', { headers: authHeader })
       .then(res => res.json())
       .then(data => setDrivers(data))
       .catch(err => console.error(err));
 
     // Fetch Fleet Vehicles
-    fetch('http://localhost:5000/api/fleet', { headers: authHeader })
+    fetch('/api/fleet', { headers: authHeader })
       .then(res => res.json())
       .then(data => {
         setVehicles(data);
@@ -52,7 +52,7 @@ const DispatcherDashboard = () => {
     e.preventDefault();
     if (!selectedDriverId || !selectedVehicleId) return;
 
-    fetch(`http://localhost:5000/api/bookings/${assigningBooking.id}/assign`, {
+    fetch(`/api/bookings/${assigningBooking.id}/assign`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

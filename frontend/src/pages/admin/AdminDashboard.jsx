@@ -21,8 +21,8 @@ const AdminDashboard = () => {
     const authHeader = { 'Authorization': `Bearer ${localStorage.getItem('token')}` };
 
     Promise.all([
-      fetch('http://localhost:5000/api/analytics/dashboard-stats', { headers: authHeader }).then(res => res.json()),
-      fetch('http://localhost:5000/api/ai/demand-prediction', { headers: authHeader }).then(res => res.json())
+      fetch('/api/analytics/dashboard-stats', { headers: authHeader }).then(res => res.json()),
+      fetch('/api/ai/demand-prediction', { headers: authHeader }).then(res => res.json())
     ])
       .then(([statsData, demandData]) => {
         setStats(statsData);

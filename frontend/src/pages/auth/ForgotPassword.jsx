@@ -19,7 +19,7 @@ const ForgotPassword = () => {
     setMessage('');
     setLoading(true);
 
-    fetch('http://localhost:5000/api/auth/forgot-password', {
+    fetch('/api/auth/forgot-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email })
@@ -46,7 +46,7 @@ const ForgotPassword = () => {
     setMessage('');
     setLoading(true);
 
-    fetch('http://localhost:5000/api/auth/reset-password', {
+    fetch('/api/auth/reset-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, token, password: newPassword })

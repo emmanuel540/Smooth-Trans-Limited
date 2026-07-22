@@ -8,7 +8,7 @@ const AnalyticsReports = () => {
   const triggerCsvDownload = (reportType) => {
     setDownloading(reportType);
     
-    fetch(`http://localhost:5000/api/analytics/export/csv?type=${reportType}`, {
+    fetch(`/api/analytics/export/csv?type=${reportType}`, {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
     })
       .then(async (res) => {

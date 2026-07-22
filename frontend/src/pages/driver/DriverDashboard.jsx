@@ -20,7 +20,7 @@ const DriverDashboard = () => {
     const authHeader = { 'Authorization': `Bearer ${localStorage.getItem('token')}` };
 
     // Fetch Trips
-    fetch('http://localhost:5000/api/bookings', { headers: authHeader })
+    fetch('/api/bookings', { headers: authHeader })
       .then(res => res.json())
       .then(data => {
         setTrips(data);
@@ -32,7 +32,7 @@ const DriverDashboard = () => {
       });
 
     // Fetch Profile details
-    fetch('http://localhost:5000/api/auth/profile', { headers: authHeader })
+    fetch('/api/auth/profile', { headers: authHeader })
       .then(res => res.json())
       .then(data => {
         setDriverProfile(data.driver_profile);
@@ -48,7 +48,7 @@ const DriverDashboard = () => {
   }, []);
 
   const handleUpdateStatus = (bookingId, newStatus) => {
-    fetch(`http://localhost:5000/api/bookings/${bookingId}/status`, {
+    fetch(`/api/bookings/${bookingId}/status`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -77,7 +77,7 @@ const DriverDashboard = () => {
     if (trackingIntervalId) clearInterval(trackingIntervalId);
 
     const fetchProgress = () => {
-      fetch(`http://localhost:5000/api/tracking/${trip.id}/progress`, {
+      fetch(`/api/tracking/${trip.id}/progress`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       })
         .then(res => res.json())

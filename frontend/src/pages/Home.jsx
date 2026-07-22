@@ -117,7 +117,7 @@ const Home = () => {
     const d = nairobiZones.find(z => z.name === dropoff);
     setPickupCoords({ lat: s.lat, lng: s.lng });
     setDropoffCoords({ lat: d.lat, lng: d.lng });
-    fetch('http://localhost:5000/api/bookings/estimate', {
+    fetch('/api/bookings/estimate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

@@ -28,8 +28,8 @@ const FleetManagement = () => {
     const authHeader = { 'Authorization': `Bearer ${localStorage.getItem('token')}` };
 
     Promise.all([
-      fetch('http://localhost:5000/api/fleet', { headers: authHeader }).then(res => res.json()),
-      fetch('http://localhost:5000/api/ai/predictive-maintenance', { headers: authHeader }).then(res => res.json())
+      fetch('/api/fleet', { headers: authHeader }).then(res => res.json()),
+      fetch('/api/ai/predictive-maintenance', { headers: authHeader }).then(res => res.json())
     ])
       .then(([fleetData, diagData]) => {
         setVehicles(fleetData);
@@ -49,7 +49,7 @@ const FleetManagement = () => {
   const handleRegisterVehicle = (e) => {
     e.preventDefault();
     
-    fetch('http://localhost:5000/api/fleet', {
+    fetch('/api/fleet', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -83,7 +83,7 @@ const FleetManagement = () => {
     e.preventDefault();
     if (!showMaintenanceModal) return;
 
-    fetch(`http://localhost:5000/api/fleet/${showMaintenanceModal.id}/maintenance`, {
+    fetch(`/api/fleet/${showMaintenanceModal.id}/maintenance`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

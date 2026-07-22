@@ -86,7 +86,7 @@ const CustomerDashboard = () => {
 
   const fetchBookings = () => {
     setLoading(true);
-    fetch('http://localhost:5000/api/bookings', {
+    fetch('/api/bookings', {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
     })
       .then(res => res.json())
@@ -143,7 +143,7 @@ const CustomerDashboard = () => {
     const startZone = nairobiZones.find(z => z.name === pickup);
     const endZone = nairobiZones.find(z => z.name === dropoff);
 
-    fetch('http://localhost:5000/api/ai/optimize-route', {
+    fetch('/api/ai/optimize-route', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -178,7 +178,7 @@ const CustomerDashboard = () => {
     const startZone = nairobiZones.find(z => z.name === pickup);
     const endZone = nairobiZones.find(z => z.name === dropoff);
 
-    fetch('http://localhost:5000/api/bookings', {
+    fetch('/api/bookings', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -219,7 +219,7 @@ const CustomerDashboard = () => {
     setIsMockMpesa(false);
     setStkCheckoutId('');
 
-    fetch('http://localhost:5000/api/payments/pay', {
+    fetch('/api/payments/pay', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -258,7 +258,7 @@ const CustomerDashboard = () => {
               return;
             }
             
-            fetch(`http://localhost:5000/api/payments/status/${payingBooking.id}`, {
+            fetch(`/api/payments/status/${payingBooking.id}`, {
               headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
             })
               .then(res => res.json())
@@ -326,7 +326,7 @@ const CustomerDashboard = () => {
   const handleSimulateMockPayment = () => {
     if (!stkCheckoutId) return;
     setPaymentStatusText('Simulating M-Pesa payment webhook callback...');
-    fetch('http://localhost:5000/api/payments/callback-mock', {
+    fetch('/api/payments/callback-mock', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -353,7 +353,7 @@ const CustomerDashboard = () => {
     if (trackingIntervalId) clearInterval(trackingIntervalId);
 
     const fetchProgress = () => {
-      fetch(`http://localhost:5000/api/tracking/${booking.id}/progress`, {
+      fetch(`/api/tracking/${booking.id}/progress`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       })
         .then(res => res.json())
@@ -378,7 +378,7 @@ const CustomerDashboard = () => {
 
   // Fetch Receipt details
   const viewReceipt = (bookingId) => {
-    fetch(`http://localhost:5000/api/payments/${bookingId}/receipt`, {
+    fetch(`/api/payments/${bookingId}/receipt`, {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
     })
       .then(res => res.json())
