@@ -23,7 +23,7 @@ class User(BaseModel):
 
     # Relationships
     driver_profile = db.relationship('DriverProfile', back_populates='user', uselist=False)
-    bookings = db.relationship('Booking', backref='customer', foreign_keys='Booking.customer_id', lazy=True)
+    bookings = db.relationship('Booking', back_populates='customer', foreign_keys='Booking.customer_id', lazy=True)
     notifications = db.relationship('Notification', backref='user', lazy=True)
 
     def set_password(self, password):
@@ -123,6 +123,7 @@ class Booking(BaseModel):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Relationships
+    customer = db.relationship('User', back_populates='bookings', foreign_keys=[customer_id])
     driver = db.relationship('User', foreign_keys=[driver_id])
     payments = db.relationship('Payment', backref='booking', lazy=True)
     trip_progress = db.relationship('TripProgress', backref='booking', lazy=True)
@@ -180,7 +181,7 @@ class MaintenanceLog(BaseModel):
     vehicle_id = db.Column(db.Integer, db.ForeignKey('vehicles.id'), nullable=False)
     description = db.Column(db.String(250), nullable=False)
     cost = db.Column(db.Float, nullable=False)
-    service_date = db.Column(db.Date, default=datetime.utcnow().date)
+    service_date = db.Column(db.Date, default=lambda: datetime.utcnow().date())
     current_mileage = db.Column(db.Float, default=0.0)
 
     def to_dict(self):

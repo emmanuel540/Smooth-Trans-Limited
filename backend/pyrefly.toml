@@ -1,16 +1,13 @@
 # pyrefly.toml - Pyrefly linter configuration for Smooth Trans backend
 
-# Point Pyrefly at the virtual environment so it can resolve all installed packages.
-python_interpreter_path = "./venv/Scripts/python.exe"
+# Point Pyrefly at the virtual environment interpreter so it can resolve installed packages.
+python-interpreter-path = "./venv/Scripts/python.exe"
 
-# Add the parent directory of backend (..) to search_path so the backend package can be imported.
-search_path = [".", ".."]
+# Add the parent directory (..) to search-path so the backend package can be imported as backend.*
+search-path = [".", ".."]
 
-# Exclude Pyrefly's own virtual inmemory scratch files from error reporting.
-# These files (e.g. __pyrefly_virtual__/inmemory/*.py) are code-completion
-# snippets analyzed out of context and always produce false-positive errors.
-[errors]
-exclude = [
+# Exclude virtual scratch files from error reporting.
+project-excludes = [
     "c:/__pyrefly_virtual__/**",
-    "__pyrefly_virtual__/**",
+    "__pyrefly_virtual__/**"
 ]
