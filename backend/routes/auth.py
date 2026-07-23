@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from datetime import datetime, date, timedelta
 from backend.models import db, User, DriverProfile, Vehicle, Notification
+from backend.email_service import send_password_reset_email, send_verification_email
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 import secrets
 
@@ -134,18 +135,20 @@ def forgot_password():
     user.reset_token_expiry = datetime.utcnow() + timedelta(hours=1)
     db.session.commit()
 
+    # Send password reset email
+    send_password_reset_email(user.email, user.name, reset_token)
+
     # Store notification in database
     db_notif = Notification(
         user_id=user.id,
-        message=f"Your password reset token is: {reset_token}",
+        message=f"Your password reset token has been sent to your email.",
         type="Email"
     )
     db.session.add(db_notif)
     db.session.commit()
 
     return jsonify({
-        'message': 'Password reset instructions sent to email',
-        'reset_token': reset_token  # Returned for demo; in production, send via email only
+        'message': 'Password reset instructions sent to email'
     }), 200
 
 @auth_bp.route('/reset-password', methods=['POST'])
@@ -228,16 +231,18 @@ def send_verification():
     user.verification_code_expiry = datetime.utcnow() + timedelta(minutes=15)
     db.session.commit()
 
+    # Send verification email
+    send_verification_email(user.email, user.name, code)
+
     # Store notification in database
     db_notif = Notification(
         user_id=user.id,
-        message=f"Your email verification code is: {code}",
+        message=f"Your email verification code has been sent to your email.",
         type="Email"
     )
     db.session.add(db_notif)
     db.session.commit()
 
     return jsonify({
-        'message': 'Verification code sent to email',
-        'code': code  # Returned for demo; in production, send via email only
+        'message': 'Verification code sent to email'
     }), 200
