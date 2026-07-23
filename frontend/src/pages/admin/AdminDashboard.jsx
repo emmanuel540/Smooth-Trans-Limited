@@ -8,6 +8,7 @@ import {
   FaMoneyBillWave, FaClipboardList, FaTruck, 
   FaUserTie, FaRegLightbulb, FaHourglassHalf, FaChartLine 
 } from 'react-icons/fa';
+import apiFetch from '../../api';
 
 const COLORS = ['#2b6cb0', 'rgba(43, 108, 176, 0.7)', 'rgba(43, 108, 176, 0.5)', 'rgba(43, 108, 176, 0.3)'];
 
@@ -21,8 +22,8 @@ const AdminDashboard = () => {
     const authHeader = { 'Authorization': `Bearer ${localStorage.getItem('token')}` };
 
     Promise.all([
-      fetch('/api/analytics/dashboard-stats', { headers: authHeader }).then(res => res.json()),
-      fetch('/api/ai/demand-prediction', { headers: authHeader }).then(res => res.json())
+      apiFetch('/api/analytics/dashboard-stats', { headers: authHeader }).then(res => res.json()),
+      apiFetch('/api/ai/demand-prediction', { headers: authHeader }).then(res => res.json())
     ])
       .then(([statsData, demandData]) => {
         setStats(statsData);

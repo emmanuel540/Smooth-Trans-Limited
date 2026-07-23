@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from '../../components/Sidebar';
 import MapTracker from '../../components/MapTracker';
 import { FaClipboardList, FaMapMarkedAlt, FaTruck, FaIdCard, FaUserPlus, FaChevronRight, FaCompass } from 'react-icons/fa';
+import apiFetch from '../../api';
 
 const DispatcherDashboard = () => {
   const [activeTab, setActiveTab] = useState('board'); // board, monitor
@@ -20,19 +21,19 @@ const DispatcherDashboard = () => {
     const authHeader = { 'Authorization': `Bearer ${localStorage.getItem('token')}` };
 
     // Fetch Bookings
-    fetch('/api/bookings', { headers: authHeader })
+    apiFetch('/api/bookings', { headers: authHeader })
       .then(res => res.json())
       .then(data => setBookings(data))
       .catch(err => console.error(err));
 
     // Fetch Available Drivers
-    fetch('/api/drivers', { headers: authHeader })
+    apiFetch('/api/drivers', { headers: authHeader })
       .then(res => res.json())
       .then(data => setDrivers(data))
       .catch(err => console.error(err));
 
     // Fetch Fleet Vehicles
-    fetch('/api/fleet', { headers: authHeader })
+    apiFetch('/api/fleet', { headers: authHeader })
       .then(res => res.json())
       .then(data => {
         setVehicles(data);
@@ -52,7 +53,7 @@ const DispatcherDashboard = () => {
     e.preventDefault();
     if (!selectedDriverId || !selectedVehicleId) return;
 
-    fetch(`/api/bookings/${assigningBooking.id}/assign`, {
+    apiFetch(`/api/bookings/${assigningBooking.id}/assign`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

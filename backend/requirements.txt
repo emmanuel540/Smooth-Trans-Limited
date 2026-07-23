@@ -6,6 +6,9 @@ Flask-Bcrypt>=1.0.1
 Flask-Cors>=4.0.0
 types-Flask-Cors>=6.0.0
 
+# Production server
+gunicorn>=21.2.0
+
 # Environment & utilities
 python-dotenv>=1.0.1
 requests>=2.31.0

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Sidebar from '../../components/Sidebar';
 import { FaFileCsv, FaFilePdf, FaFolderOpen, FaArrowCircleDown, FaClipboardList, FaTruck, FaMoneyBillWave } from 'react-icons/fa';
+import apiFetch from '../../api';
 
 const AnalyticsReports = () => {
   const [downloading, setDownloading] = useState(null);
@@ -8,7 +9,7 @@ const AnalyticsReports = () => {
   const triggerCsvDownload = (reportType) => {
     setDownloading(reportType);
     
-    fetch(`/api/analytics/export/csv?type=${reportType}`, {
+    apiFetch(`/api/analytics/export/csv?type=${reportType}`, {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
     })
       .then(async (res) => {

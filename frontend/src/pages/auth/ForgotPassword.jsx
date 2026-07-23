@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import stLogo from '../../assets/st_logo.png';
+import apiFetch from '../../api';
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
@@ -19,7 +20,7 @@ const ForgotPassword = () => {
     setMessage('');
     setLoading(true);
 
-    fetch('/api/auth/forgot-password', {
+    apiFetch('/api/auth/forgot-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email })
@@ -46,7 +47,7 @@ const ForgotPassword = () => {
     setMessage('');
     setLoading(true);
 
-    fetch('/api/auth/reset-password', {
+    apiFetch('/api/auth/reset-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, token, password: newPassword })
