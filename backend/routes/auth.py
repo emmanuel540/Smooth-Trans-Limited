@@ -1,7 +1,6 @@
 from flask import Blueprint, request, jsonify
 from datetime import datetime, date, timedelta
 from backend.models import db, User, DriverProfile, Vehicle, Notification
-from backend.email_service import send_password_reset_email, send_verification_email
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 import secrets
 
@@ -135,9 +134,6 @@ def forgot_password():
     user.reset_token_expiry = datetime.utcnow() + timedelta(hours=1)
     db.session.commit()
 
-    # Send password reset email
-    send_password_reset_email(user.email, user.name, reset_token)
-
     # Store notification in database
     db_notif = Notification(
         user_id=user.id,
@@ -230,9 +226,6 @@ def send_verification():
     user.verification_code = code
     user.verification_code_expiry = datetime.utcnow() + timedelta(minutes=15)
     db.session.commit()
-
-    # Send verification email
-    send_verification_email(user.email, user.name, code)
 
     # Store notification in database
     db_notif = Notification(

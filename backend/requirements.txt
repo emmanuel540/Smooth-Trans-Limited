@@ -12,6 +12,3 @@ requests>=2.31.0
 
 # Database (PostgreSQL / Supabase)
 psycopg2-binary>=2.9.0
-
-# Email (Resend)
-resend>=2.0.0
