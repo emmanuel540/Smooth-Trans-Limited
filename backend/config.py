@@ -1,11 +1,11 @@
 import os
 from dotenv import load_dotenv
 
-# Load environment variables from .env
-load_dotenv()
+# Load environment variables from backend/.env
+backend_dir = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(backend_dir, '.env'))
 
 # Absolute path of the backend directory (used for the SQLite fallback)
-backend_dir = os.path.dirname(os.path.abspath(__file__))
 _SQLITE_URI = f"sqlite:///{os.path.join(backend_dir, 'instance', 'smooth_trans.db')}"
 
 
