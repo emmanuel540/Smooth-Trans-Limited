@@ -50,15 +50,8 @@ const Login = () => {
   const selectRole = (role) => {
     setSelectedRole(role);
     setError('');
-    const creds = {
-      passenger: { email: 'alex@gmail.com',        password: 'password123' },
-      driver:    { email: 'driver@smooth.co.ke',   password: 'password123' },
-      admin:     { email: 'admin@smooth.co.ke',    password: 'password123' },
-    };
-    if (creds[role]) {
-      setEmail(creds[role].email);
-      setPassword(creds[role].password);
-    }
+    setEmail('');
+    setPassword('');
   };
 
   const roles = [

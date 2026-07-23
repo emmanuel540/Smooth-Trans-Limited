@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 // Home
 import Home from './features/home/Home';
@@ -12,6 +12,7 @@ import ForgotPassword from './features/auth/ForgotPassword';
 
 // Shared
 import ProtectedRoute from './features/shared/ProtectedRoute';
+import NotFound from './features/shared/NotFound';
 
 // Dashboards
 import CustomerDashboard from './features/customer/CustomerDashboard';
@@ -102,7 +103,7 @@ function App() {
         />
 
         {/* Catch-all fallback */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );

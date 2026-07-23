@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../shared/Sidebar';
+import Navbar from '../shared/Navbar';
 import { 
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, 
   Tooltip, BarChart, Bar, Cell, LineChart, Line, CartesianGrid 
@@ -42,10 +43,13 @@ const AdminDashboard = () => {
 
   if (loading || !stats) {
     return (
-      <div className="dashboard-container">
-        <Sidebar />
-        <div className="main-content" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-          <div className="loader-spinner" style={{ width: '48px', height: '48px' }}></div>
+      <div style={{ background: 'var(--bg-main)', minHeight: '100vh' }}>
+        <Navbar />
+        <div className="dashboard-container">
+          <Sidebar />
+          <div className="main-content" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+            <div className="loader-spinner" style={{ width: '48px', height: '48px' }}></div>
+          </div>
         </div>
       </div>
     );
@@ -54,8 +58,10 @@ const AdminDashboard = () => {
   const summary = stats.summary;
 
   return (
-    <div className="dashboard-container">
-      <Sidebar />
+    <div style={{ background: 'var(--bg-main)', minHeight: '100vh' }}>
+      <Navbar />
+      <div className="dashboard-container">
+        <Sidebar />
       <div className="main-content">
         
         {/* Title */}
@@ -213,6 +219,7 @@ const AdminDashboard = () => {
             }
           }
         `}</style>
+      </div>
       </div>
     </div>
   );

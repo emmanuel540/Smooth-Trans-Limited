@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../shared/Sidebar';
+import Navbar from '../shared/Navbar';
 import MapTracker from '../shared/MapTracker';
 import { 
   FaClipboardList, FaTruck, FaMoneyBillWave, 
@@ -7,14 +8,30 @@ import {
 } from 'react-icons/fa';
 import apiFetch from '../../api';
 
+const HASH_TAB_MAP = { '#trips': 'trips', '#vehicle': 'vehicle', '#earnings': 'earnings' };
+
 const DriverDashboard = () => {
-  const [activeTab, setActiveTab] = useState('trips'); // trips, vehicle, earnings
+  const [activeTab, setActiveTab] = useState(() => HASH_TAB_MAP[window.location.hash] || 'trips');
   const [trips, setTrips] = useState([]);
   const [driverProfile, setDriverProfile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [activeMapTrip, setActiveMapTrip] = useState(null);
   const [trackingData, setTrackingData] = useState(null);
   const [trackingIntervalId, setTrackingIntervalId] = useState(null);
+
+  useEffect(() => {
+    const onHashChange = () => {
+      const tab = HASH_TAB_MAP[window.location.hash];
+      if (tab) setActiveTab(tab);
+    };
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
+
+  const switchTab = (tab) => {
+    window.location.hash = tab;
+    setActiveTab(tab);
+  };
 
   const fetchTripsAndProfile = () => {
     setLoading(true);
@@ -106,7 +123,9 @@ const DriverDashboard = () => {
   const totalEarnings = completedTrips.reduce((sum, t) => sum + (t.fare * 0.6), 0);
 
   return (
-    <div className="dashboard-container">
+    <div style={{ background: 'var(--bg-main)', minHeight: '100vh' }}>
+      <Navbar />
+      <div className="dashboard-container">
       <Sidebar />
       <div className="main-content">
         
@@ -119,7 +138,7 @@ const DriverDashboard = () => {
           marginBottom: '30px'
         }}>
           <button 
-            onClick={() => { setActiveTab('trips'); stopMapMonitoring(); }}
+            onClick={() => switchTab('trips')}
             className="btn-secondary" 
             style={{
               background: activeTab === 'trips' ? 'rgba(16, 185, 129, 0.1)' : 'transparent',
@@ -131,7 +150,7 @@ const DriverDashboard = () => {
             <span>Assigned Trips</span>
           </button>
           <button 
-            onClick={() => { setActiveTab('vehicle'); stopMapMonitoring(); }}
+            onClick={() => switchTab('vehicle')}
             className="btn-secondary"
             style={{
               background: activeTab === 'vehicle' ? 'rgba(16, 185, 129, 0.1)' : 'transparent',
@@ -143,7 +162,7 @@ const DriverDashboard = () => {
             <span>Vehicle Log</span>
           </button>
           <button 
-            onClick={() => { setActiveTab('earnings'); stopMapMonitoring(); }}
+            onClick={() => switchTab('earnings')}
             className="btn-secondary"
             style={{
               background: activeTab === 'earnings' ? 'rgba(16, 185, 129, 0.1)' : 'transparent',
@@ -422,6 +441,7 @@ const DriverDashboard = () => {
           </div>
         )}
 
+      </div>
       </div>
     </div>
   );

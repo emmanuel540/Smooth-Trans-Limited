@@ -32,7 +32,7 @@ const ForgotPassword = () => {
       })
       .then((data) => {
         setTokenSent(true);
-        setMessage("A password reset token was sent to your email. (Use the demonstration token: ST-84931)");
+        setMessage("A password reset token was sent to your email. Check your inbox for the 6-digit code.");
         setLoading(false);
       })
       .catch((err) => {
@@ -162,7 +162,7 @@ const ForgotPassword = () => {
               <input 
                 type="text" 
                 className="glass-input" 
-                placeholder="ST-84931"
+                placeholder="Enter 6-digit code"
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
                 required 

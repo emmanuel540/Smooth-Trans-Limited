@@ -1,15 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../shared/Sidebar';
+import Navbar from '../shared/Navbar';
 import MapTracker from '../shared/MapTracker';
 import { FaClipboardList, FaMapMarkedAlt, FaTruck, FaIdCard, FaUserPlus, FaChevronRight, FaCompass } from 'react-icons/fa';
 import apiFetch from '../../api';
 
+const HASH_TAB_MAP = { '#board': 'board', '#monitor': 'monitor' };
+
 const DispatcherDashboard = () => {
-  const [activeTab, setActiveTab] = useState('board'); // board, monitor
+  const [activeTab, setActiveTab] = useState(() => HASH_TAB_MAP[window.location.hash] || 'board');
   const [bookings, setBookings] = useState([]);
   const [drivers, setDrivers] = useState([]);
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const onHashChange = () => {
+      const tab = HASH_TAB_MAP[window.location.hash];
+      if (tab) setActiveTab(tab);
+    };
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
+
+  const switchTab = (tab) => {
+    window.location.hash = tab;
+    setActiveTab(tab);
+  };
 
   // Assign modal state
   const [assigningBooking, setAssigningBooking] = useState(null);
@@ -85,7 +102,9 @@ const DispatcherDashboard = () => {
   const activeBookings = bookings.filter(b => b.status === 'Active' || b.status === 'Assigned');
 
   return (
-    <div className="dashboard-container">
+    <div style={{ background: 'var(--bg-main)', minHeight: '100vh' }}>
+      <Navbar />
+      <div className="dashboard-container">
       <Sidebar />
       <div className="main-content">
         
@@ -98,7 +117,7 @@ const DispatcherDashboard = () => {
           marginBottom: '30px'
         }}>
           <button 
-            onClick={() => setActiveTab('board')}
+            onClick={() => switchTab('board')}
             className="btn-secondary" 
             style={{
               background: activeTab === 'board' ? 'rgba(16, 185, 129, 0.1)' : 'transparent',
@@ -110,7 +129,7 @@ const DispatcherDashboard = () => {
             <span>Dispatch Board</span>
           </button>
           <button 
-            onClick={() => setActiveTab('monitor')}
+            onClick={() => switchTab('monitor')}
             className="btn-secondary"
             style={{
               background: activeTab === 'monitor' ? 'rgba(16, 185, 129, 0.1)' : 'transparent',
@@ -342,6 +361,7 @@ const DispatcherDashboard = () => {
           </div>
         )}
 
+      </div>
       </div>
     </div>
   );

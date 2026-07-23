@@ -32,14 +32,14 @@ const Sidebar = () => {
         ];
       case 'driver':
         return [
-          { name: 'Assigned Trips', path: '/dashboard/driver',          icon: <FaClipboardList /> },
-          { name: 'Vehicle Status', path: '/dashboard/driver/vehicle',   icon: <FaTruck /> },
-          { name: 'My Earnings',    path: '/dashboard/driver/earnings',  icon: <FaMoneyBillWave /> },
+          { name: 'Assigned Trips', path: '/dashboard/driver#trips',    hash: '#trips',    icon: <FaClipboardList /> },
+          { name: 'Vehicle Status', path: '/dashboard/driver#vehicle',  hash: '#vehicle',  icon: <FaTruck /> },
+          { name: 'My Earnings',    path: '/dashboard/driver#earnings', hash: '#earnings', icon: <FaMoneyBillWave /> },
         ];
       case 'dispatcher':
         return [
-          { name: 'Dispatch Board',    path: '/dashboard/dispatcher',         icon: <FaClipboardList /> },
-          { name: 'Live Map Monitor',  path: '/dashboard/dispatcher/monitor', icon: <FaMapMarkedAlt /> },
+          { name: 'Dispatch Board',   path: '/dashboard/dispatcher#board',   hash: '#board',   icon: <FaClipboardList /> },
+          { name: 'Live Map Monitor', path: '/dashboard/dispatcher#monitor', hash: '#monitor', icon: <FaMapMarkedAlt /> },
         ];
       case 'admin':
         return [
@@ -58,7 +58,7 @@ const Sidebar = () => {
 
   const isLinkActive = (link) => {
     if (link.noActiveMatch) return false;
-    if (user.role === 'passenger' && link.hash) return currentHash === link.hash;
+    if (link.hash) return currentHash === link.hash;
     return location.pathname === link.path;
   };
 
@@ -125,7 +125,7 @@ const Sidebar = () => {
               key={link.name}
               to={link.path}
               onClick={() => {
-                if (user.role === 'passenger' && link.hash) {
+                if (link.hash) {
                   window.location.hash = link.hash;
                   window.dispatchEvent(new HashChangeEvent('hashchange'));
                 }
