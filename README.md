@@ -1,6 +1,6 @@
 # Smooth Trans Limited
 
-A modern logistics and fleet management platform with dynamic dashboards for Customers, Drivers, Dispatchers, and Admins. Features AI-powered route optimization, demand forecasting, and vehicle predictive maintenance powered by Gemini 3.5 Flash.
+A modern logistics and fleet management platform with dynamic dashboards for Customers, Drivers, Dispatchers, and Admins. Features AI-powered route optimization, demand forecasting, and vehicle predictive maintenance.
 
 ---
 
@@ -10,7 +10,6 @@ A modern logistics and fleet management platform with dynamic dashboards for Cus
 - **UI Libraries:** Recharts (analytics), React Icons
 - **Backend:** Flask API (Python 3.10+), SQLAlchemy
 - **Database:** Supabase PostgreSQL
-- **AI Engine:** Gemini 3.5 Flash
 
 ---
 
