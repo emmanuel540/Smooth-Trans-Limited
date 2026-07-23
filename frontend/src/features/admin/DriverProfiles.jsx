@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../shared/Sidebar';
 import { FaIdCard, FaStar, FaUserPlus, FaCalendarAlt, FaTrash } from 'react-icons/fa';
+import apiFetch from '../../api';
 
 const DriverProfiles = () => {
   const [drivers, setDrivers] = useState([]);
@@ -8,7 +9,7 @@ const DriverProfiles = () => {
 
   const fetchDrivers = () => {
     setLoading(true);
-    fetch('/api/drivers', {
+    apiFetch('/api/drivers', {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
     })
       .then(res => res.json())
@@ -92,7 +93,7 @@ const DriverProfiles = () => {
                   onClick={() => {
                     const stars = prompt("Enter mock feedback rating (1 to 5 stars) for " + d.name + ":");
                     if (stars && parseFloat(stars) >= 1 && parseFloat(stars) <= 5) {
-                      fetch(`/api/drivers/${d.user_id}/rating`, {
+                      apiFetch(`/api/drivers/${d.user_id}/rating`, {
                         method: 'POST',
                         headers: {
                           'Content-Type': 'application/json',

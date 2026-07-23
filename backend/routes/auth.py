@@ -1,7 +1,8 @@
 from flask import Blueprint, request, jsonify
-from datetime import datetime, date
-from backend.models import db, User, DriverProfile, Vehicle
+from datetime import datetime, date, timedelta
+from backend.models import db, User, DriverProfile, Vehicle, Notification
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+import secrets
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -127,29 +128,23 @@ def forgot_password():
         # Avoid user enumeration by returning 200 anyway
         return jsonify({'message': 'If the email exists, a reset code was sent'}), 200
 
-    # Simulate email dispatch
-    # Create notification entry
-    notif = User.query.filter_by(role='admin').first()
-    admin_id = notif.id if notif else user.id
-    
-    reset_notif = User.query.get(user.id)
-    if reset_notif:
-        mock_notif = db.session.execute(
-            db.select(User).filter_by(id=user.id)
-        ).scalar()
-        # Create a notification in database
-        from backend.models import Notification
-        db_notif = Notification(
-            user_id=user.id,
-            message="Your password reset token is ST-84931. Use it to update your password.",
-            type="Email"
-        )
-        db.session.add(db_notif)
-        db.session.commit()
+    # Generate a real random reset token
+    reset_token = secrets.token_urlsafe(32)
+    user.reset_token = reset_token
+    user.reset_token_expiry = datetime.utcnow() + timedelta(hours=1)
+    db.session.commit()
+
+    # Store notification in database
+    db_notif = Notification(
+        user_id=user.id,
+        message=f"Your password reset token has been sent to your email.",
+        type="Email"
+    )
+    db.session.add(db_notif)
+    db.session.commit()
 
     return jsonify({
-        'message': 'Password reset instructions sent to email',
-        'reset_token': 'ST-84931' # For frontend demonstration
+        'message': 'Password reset instructions sent to email'
     }), 200
 
 @auth_bp.route('/reset-password', methods=['POST'])
@@ -162,15 +157,24 @@ def reset_password():
     if not email or not token or not new_password:
         return jsonify({'message': 'Email, token, and new password are required'}), 400
 
-    if token != 'ST-84931':
-        return jsonify({'message': 'Invalid token'}), 400
-
     user = User.query.filter_by(email=email).first()
     if not user:
         return jsonify({'message': 'User not found'}), 404
 
+    # Validate token
+    if not user.reset_token or user.reset_token != token:
+        return jsonify({'message': 'Invalid reset token'}), 400
+
+    # Check expiry
+    if user.reset_token_expiry and user.reset_token_expiry < datetime.utcnow():
+        return jsonify({'message': 'Reset token has expired'}), 400
+
+    # Set new password and clear token
     user.set_password(new_password)
+    user.reset_token = None
+    user.reset_token_expiry = None
     db.session.commit()
+
     return jsonify({'message': 'Password reset successfully'}), 200
 
 @auth_bp.route('/verify-email', methods=['POST'])
@@ -182,13 +186,56 @@ def verify_email():
     if not email or not code:
         return jsonify({'message': 'Email and verification code are required'}), 400
 
-    if code != '123456': # Standard mock code
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+
+    # Validate code
+    if not user.verification_code or user.verification_code != code:
         return jsonify({'message': 'Invalid verification code'}), 400
+
+    # Check expiry
+    if user.verification_code_expiry and user.verification_code_expiry < datetime.utcnow():
+        return jsonify({'message': 'Verification code has expired'}), 400
+
+    # Verify and clear code
+    user.is_verified = True
+    user.verification_code = None
+    user.verification_code_expiry = None
+    db.session.commit()
+
+    return jsonify({'message': 'Email verified successfully'}), 200
+
+@auth_bp.route('/send-verification', methods=['POST'])
+def send_verification():
+    data = request.get_json() or {}
+    email = data.get('email')
+
+    if not email:
+        return jsonify({'message': 'Email is required'}), 400
 
     user = User.query.filter_by(email=email).first()
     if not user:
         return jsonify({'message': 'User not found'}), 404
 
-    user.is_verified = True
+    if user.is_verified:
+        return jsonify({'message': 'Email is already verified'}), 200
+
+    # Generate a real 6-digit code
+    code = f"{secrets.randbelow(900000) + 100000}"
+    user.verification_code = code
+    user.verification_code_expiry = datetime.utcnow() + timedelta(minutes=15)
     db.session.commit()
-    return jsonify({'message': 'Email verified successfully'}), 200
+
+    # Store notification in database
+    db_notif = Notification(
+        user_id=user.id,
+        message=f"Your email verification code has been sent to your email.",
+        type="Email"
+    )
+    db.session.add(db_notif)
+    db.session.commit()
+
+    return jsonify({
+        'message': 'Verification code sent to email'
+    }), 200

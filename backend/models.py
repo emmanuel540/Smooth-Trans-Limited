@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 
@@ -19,6 +19,10 @@ class User(BaseModel):
     role = db.Column(db.String(20), nullable=False, default='passenger') # passenger, driver, dispatcher, admin
     phone = db.Column(db.String(20), nullable=True)
     is_verified = db.Column(db.Boolean, default=False)
+    reset_token = db.Column(db.String(100), nullable=True)
+    reset_token_expiry = db.Column(db.DateTime, nullable=True)
+    verification_code = db.Column(db.String(10), nullable=True)
+    verification_code_expiry = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Relationships

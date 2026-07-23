@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import stLogo from '../../assets/st_logo.png';
+import apiFetch from '../../api';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -28,7 +29,7 @@ const Register = () => {
       payload.license_expiry = licenseExpiry;
     }
 
-    fetch('/api/auth/register', {
+    apiFetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)

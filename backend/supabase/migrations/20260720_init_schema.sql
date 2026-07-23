@@ -1,4 +1,4 @@
--- Smooth Trans Supabase Initial Database Schema (PostgreSQL-compatible)
+-- Smooth Trans Supabase Database Schema (PostgreSQL)
 -- Run this in the Supabase SQL Editor (https://supabase.com/dashboard/project/ezjecxlodpuviqqgcjwx/sql/new)
 
 -- =========================================================================
@@ -23,9 +23,13 @@ CREATE TABLE public.users (
     name VARCHAR(100) NOT NULL,
     email VARCHAR(120) UNIQUE NOT NULL,
     password_hash VARCHAR(128) NOT NULL,
-    role VARCHAR(20) NOT NULL DEFAULT 'passenger', -- passenger, driver, dispatcher, admin
+    role VARCHAR(20) NOT NULL DEFAULT 'passenger',
     phone VARCHAR(20),
     is_verified BOOLEAN DEFAULT FALSE,
+    reset_token VARCHAR(100),
+    reset_token_expiry TIMESTAMP WITH TIME ZONE,
+    verification_code VARCHAR(10),
+    verification_code_expiry TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -36,8 +40,8 @@ CREATE TABLE public.vehicles (
     make VARCHAR(50) NOT NULL,
     model VARCHAR(50) NOT NULL,
     year INT NOT NULL,
-    type VARCHAR(20) NOT NULL, -- Transport, SchoolBus, DeliveryVan, MovingTruck
-    status VARCHAR(20) DEFAULT 'Active', -- Active, InService, Maintenance
+    type VARCHAR(20) NOT NULL,
+    status VARCHAR(20) DEFAULT 'Active',
     mileage FLOAT DEFAULT 0.0,
     fuel_level FLOAT DEFAULT 100.0,
     avg_fuel_consumption FLOAT DEFAULT 10.0,
@@ -50,7 +54,7 @@ CREATE TABLE public.driver_profiles (
     user_id INT REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
     license_number VARCHAR(50) NOT NULL,
     license_expiry DATE NOT NULL,
-    status VARCHAR(20) DEFAULT 'Available', -- Available, Active, Offline
+    status VARCHAR(20) DEFAULT 'Available',
     rating FLOAT DEFAULT 5.0,
     vehicle_id INT REFERENCES public.vehicles(id) ON DELETE SET NULL
 );
@@ -61,7 +65,7 @@ CREATE TABLE public.bookings (
     customer_id INT REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
     driver_id INT REFERENCES public.users(id) ON DELETE SET NULL,
     vehicle_id INT REFERENCES public.vehicles(id) ON DELETE SET NULL,
-    booking_type VARCHAR(20) NOT NULL, -- General, School, Delivery, Moving
+    booking_type VARCHAR(20) NOT NULL,
     pickup_address VARCHAR(200) NOT NULL,
     dropoff_address VARCHAR(200) NOT NULL,
     pickup_lat FLOAT NOT NULL,
@@ -70,7 +74,7 @@ CREATE TABLE public.bookings (
     dropoff_lng FLOAT NOT NULL,
     pickup_time TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     fare FLOAT NOT NULL,
-    status VARCHAR(20) DEFAULT 'Pending', -- Pending, Assigned, Active, Completed, Cancelled
+    status VARCHAR(20) DEFAULT 'Pending',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -79,8 +83,8 @@ CREATE TABLE public.payments (
     id SERIAL PRIMARY KEY,
     booking_id INT REFERENCES public.bookings(id) ON DELETE CASCADE NOT NULL,
     amount FLOAT NOT NULL,
-    payment_method VARCHAR(20) NOT NULL, -- MPesa, Card
-    status VARCHAR(20) DEFAULT 'Pending', -- Pending, Completed, Failed
+    payment_method VARCHAR(20) NOT NULL,
+    status VARCHAR(20) DEFAULT 'Pending',
     transaction_id VARCHAR(50) UNIQUE,
     invoice_no VARCHAR(50) UNIQUE NOT NULL,
     checkout_request_id VARCHAR(100),
@@ -103,8 +107,8 @@ CREATE TABLE public.notifications (
     id SERIAL PRIMARY KEY,
     user_id INT REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
     message VARCHAR(250) NOT NULL,
-    type VARCHAR(20) NOT NULL, -- SMS, Email, Push
-    status VARCHAR(20) DEFAULT 'Sent', -- Sent, Read
+    type VARCHAR(20) NOT NULL,
+    status VARCHAR(20) DEFAULT 'Sent',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -119,10 +123,22 @@ CREATE TABLE public.trip_progress (
 );
 
 -- =========================================================================
--- 3. ROW LEVEL SECURITY (RLS) POLICIES
+-- 3. INDEXES
+-- =========================================================================
+CREATE INDEX idx_users_email ON public.users(email);
+CREATE INDEX idx_users_reset_token ON public.users(reset_token);
+CREATE INDEX idx_users_verification_code ON public.users(verification_code);
+CREATE INDEX idx_bookings_customer ON public.bookings(customer_id);
+CREATE INDEX idx_bookings_driver ON public.bookings(driver_id);
+CREATE INDEX idx_bookings_status ON public.bookings(status);
+CREATE INDEX idx_payments_booking ON public.payments(booking_id);
+CREATE INDEX idx_notifications_user ON public.notifications(user_id);
+CREATE INDEX idx_trip_progress_booking ON public.trip_progress(booking_id);
+
+-- =========================================================================
+-- 4. ROW LEVEL SECURITY (RLS) POLICIES
 -- =========================================================================
 
--- Enable RLS on all tables
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.vehicles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.driver_profiles ENABLE ROW LEVEL SECURITY;
@@ -132,62 +148,22 @@ ALTER TABLE public.maintenance_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.trip_progress ENABLE ROW LEVEL SECURITY;
 
--- Note: Since the Flask backend accesses the database using the postgres direct URL, 
--- it operates as a superuser and bypasses RLS. These policies are in place to secure 
--- the database if frontend clients connect directly to Supabase REST/GraphQL APIs.
+-- Flask backend uses direct postgres URL (superuser), bypasses RLS.
+-- These policies secure direct Supabase REST/GraphQL access.
 
--- 1. USERS POLICIES
-CREATE POLICY user_read_own ON public.users 
-    FOR SELECT USING (true); -- Simplified for hybrid API usage
-
-CREATE POLICY user_write_own ON public.users 
-    FOR ALL USING (true);
-
--- 2. VEHICLES POLICIES
-CREATE POLICY auth_view_vehicles ON public.vehicles
-    FOR SELECT USING (true);
-
-CREATE POLICY manage_vehicles ON public.vehicles
-    FOR ALL USING (true);
-
--- 3. DRIVER PROFILES POLICIES
-CREATE POLICY view_driver_profiles ON public.driver_profiles
-    FOR SELECT USING (true);
-
-CREATE POLICY manage_driver_profiles ON public.driver_profiles
-    FOR ALL USING (true);
-
--- 4. BOOKINGS POLICIES
-CREATE POLICY view_bookings ON public.bookings
-    FOR SELECT USING (true);
-
-CREATE POLICY manage_bookings ON public.bookings
-    FOR ALL USING (true);
-
--- 5. PAYMENTS POLICIES
-CREATE POLICY view_payments ON public.payments
-    FOR SELECT USING (true);
-
-CREATE POLICY manage_payments ON public.payments
-    FOR ALL USING (true);
-
--- 6. MAINTENANCE LOGS POLICIES
-CREATE POLICY view_maintenance ON public.maintenance_logs
-    FOR SELECT USING (true);
-
-CREATE POLICY manage_maintenance ON public.maintenance_logs
-    FOR ALL USING (true);
-
--- 7. NOTIFICATIONS POLICIES
-CREATE POLICY view_notifications ON public.notifications
-    FOR SELECT USING (true);
-
-CREATE POLICY manage_notifications ON public.notifications
-    FOR ALL USING (true);
-
--- 8. TRIP PROGRESS POLICIES
-CREATE POLICY view_trip_progress ON public.trip_progress
-    FOR SELECT USING (true);
-
-CREATE POLICY manage_trip_progress ON public.trip_progress
-    FOR ALL USING (true);
+CREATE POLICY user_read_own ON public.users FOR SELECT USING (true);
+CREATE POLICY user_write_own ON public.users FOR ALL USING (true);
+CREATE POLICY auth_view_vehicles ON public.vehicles FOR SELECT USING (true);
+CREATE POLICY manage_vehicles ON public.vehicles FOR ALL USING (true);
+CREATE POLICY view_driver_profiles ON public.driver_profiles FOR SELECT USING (true);
+CREATE POLICY manage_driver_profiles ON public.driver_profiles FOR ALL USING (true);
+CREATE POLICY view_bookings ON public.bookings FOR SELECT USING (true);
+CREATE POLICY manage_bookings ON public.bookings FOR ALL USING (true);
+CREATE POLICY view_payments ON public.payments FOR SELECT USING (true);
+CREATE POLICY manage_payments ON public.payments FOR ALL USING (true);
+CREATE POLICY view_maintenance ON public.maintenance_logs FOR SELECT USING (true);
+CREATE POLICY manage_maintenance ON public.maintenance_logs FOR ALL USING (true);
+CREATE POLICY view_notifications ON public.notifications FOR SELECT USING (true);
+CREATE POLICY manage_notifications ON public.notifications FOR ALL USING (true);
+CREATE POLICY view_trip_progress ON public.trip_progress FOR SELECT USING (true);
+CREATE POLICY manage_trip_progress ON public.trip_progress FOR ALL USING (true);

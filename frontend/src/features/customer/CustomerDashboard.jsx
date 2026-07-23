@@ -13,6 +13,7 @@ import {
 
 import safetyBg from '../../assets/safety_bg.png';
 import heroVan from '../../assets/hero_van.png';
+import apiFetch from '../../api';
 
 const nairobiZones = [
   { name: 'Nairobi CBD', lat: -1.2921, lng: 36.8219 },
@@ -86,7 +87,7 @@ const CustomerDashboard = () => {
 
   const fetchBookings = () => {
     setLoading(true);
-    fetch('/api/bookings', {
+    apiFetch('/api/bookings', {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
     })
       .then(res => res.json())
@@ -143,7 +144,7 @@ const CustomerDashboard = () => {
     const startZone = nairobiZones.find(z => z.name === pickup);
     const endZone = nairobiZones.find(z => z.name === dropoff);
 
-    fetch('/api/ai/optimize-route', {
+    apiFetch('/api/ai/optimize-route', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -178,7 +179,7 @@ const CustomerDashboard = () => {
     const startZone = nairobiZones.find(z => z.name === pickup);
     const endZone = nairobiZones.find(z => z.name === dropoff);
 
-    fetch('/api/bookings', {
+    apiFetch('/api/bookings', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -219,7 +220,7 @@ const CustomerDashboard = () => {
     setIsMockMpesa(false);
     setStkCheckoutId('');
 
-    fetch('/api/payments/pay', {
+    apiFetch('/api/payments/pay', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -258,7 +259,7 @@ const CustomerDashboard = () => {
               return;
             }
             
-            fetch(`/api/payments/status/${payingBooking.id}`, {
+            apiFetch(`/api/payments/status/${payingBooking.id}`, {
               headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
             })
               .then(res => res.json())
@@ -326,7 +327,7 @@ const CustomerDashboard = () => {
   const handleSimulateMockPayment = () => {
     if (!stkCheckoutId) return;
     setPaymentStatusText('Simulating M-Pesa payment webhook callback...');
-    fetch('/api/payments/callback-mock', {
+    apiFetch('/api/payments/callback-mock', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -353,7 +354,7 @@ const CustomerDashboard = () => {
     if (trackingIntervalId) clearInterval(trackingIntervalId);
 
     const fetchProgress = () => {
-      fetch(`/api/tracking/${booking.id}/progress`, {
+      apiFetch(`/api/tracking/${booking.id}/progress`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       })
         .then(res => res.json())
@@ -378,7 +379,7 @@ const CustomerDashboard = () => {
 
   // Fetch Receipt details
   const viewReceipt = (bookingId) => {
-    fetch(`/api/payments/${bookingId}/receipt`, {
+    apiFetch(`/api/payments/${bookingId}/receipt`, {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
     })
       .then(res => res.json())

@@ -38,12 +38,12 @@ def init_db(app):
                     phone="0700000000",
                     is_verified=True
                 )
-                new_admin.set_password("admin123")
+                new_admin.set_password("password123")
                 db.session.add(new_admin)
                 db.session.commit()
-                print("[DB] Seeded admin user: admin@smooth.co.ke / admin123")
+                print("  [OK] Seeded admin user: admin@smooth.co.ke / password123")
         except Exception as e:
-            print(f"[DB] WARNING: Failed to seed admin user: {e}")
+            print(f"  [!!] Failed to seed admin user: {e}")
 
 
 

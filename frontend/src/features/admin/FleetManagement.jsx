@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../shared/Sidebar';
 import { FaTruck, FaWrench, FaExclamationTriangle, FaPlusCircle, FaTrash, FaPen } from 'react-icons/fa';
+import apiFetch from '../../api';
 
 const FleetManagement = () => {
   const [vehicles, setVehicles] = useState([]);
@@ -28,8 +29,8 @@ const FleetManagement = () => {
     const authHeader = { 'Authorization': `Bearer ${localStorage.getItem('token')}` };
 
     Promise.all([
-      fetch('/api/fleet', { headers: authHeader }).then(res => res.json()),
-      fetch('/api/ai/predictive-maintenance', { headers: authHeader }).then(res => res.json())
+      apiFetch('/api/fleet', { headers: authHeader }).then(res => res.json()),
+      apiFetch('/api/ai/predictive-maintenance', { headers: authHeader }).then(res => res.json())
     ])
       .then(([fleetData, diagData]) => {
         setVehicles(fleetData);
@@ -49,7 +50,7 @@ const FleetManagement = () => {
   const handleRegisterVehicle = (e) => {
     e.preventDefault();
     
-    fetch('/api/fleet', {
+    apiFetch('/api/fleet', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -83,7 +84,7 @@ const FleetManagement = () => {
     e.preventDefault();
     if (!showMaintenanceModal) return;
 
-    fetch(`/api/fleet/${showMaintenanceModal.id}/maintenance`, {
+    apiFetch(`/api/fleet/${showMaintenanceModal.id}/maintenance`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

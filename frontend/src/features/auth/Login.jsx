@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaFingerprint, FaQrcode } from 'react-icons/fa';
 import stLogo from '../../assets/st_logo.png';
+import apiFetch from '../../api';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ const Login = () => {
     setError('');
     setLoading(true);
 
-    fetch('/api/auth/login', {
+    apiFetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })

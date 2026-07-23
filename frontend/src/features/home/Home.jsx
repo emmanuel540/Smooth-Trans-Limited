@@ -9,6 +9,7 @@ import Navbar from '../shared/Navbar';
 import MapTracker from '../shared/MapTracker';
 import stLogo from '../../assets/st_logo.png';
 import heroVan from '../../assets/hero_van.png';
+import apiFetch from '../../api';
 
 const nairobiZones = [
   { name: 'Nairobi CBD', lat: -1.2921, lng: 36.8219 },
@@ -117,7 +118,7 @@ const Home = () => {
     const d = nairobiZones.find(z => z.name === dropoff);
     setPickupCoords({ lat: s.lat, lng: s.lng });
     setDropoffCoords({ lat: d.lat, lng: d.lng });
-    fetch('/api/bookings/estimate', {
+    apiFetch('/api/bookings/estimate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

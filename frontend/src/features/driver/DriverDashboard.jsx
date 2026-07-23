@@ -5,6 +5,7 @@ import {
   FaClipboardList, FaTruck, FaMoneyBillWave, 
   FaPlay, FaCheckCircle, FaExclamationTriangle 
 } from 'react-icons/fa';
+import apiFetch from '../../api';
 
 const DriverDashboard = () => {
   const [activeTab, setActiveTab] = useState('trips'); // trips, vehicle, earnings
@@ -20,7 +21,7 @@ const DriverDashboard = () => {
     const authHeader = { 'Authorization': `Bearer ${localStorage.getItem('token')}` };
 
     // Fetch Trips
-    fetch('/api/bookings', { headers: authHeader })
+    apiFetch('/api/bookings', { headers: authHeader })
       .then(res => res.json())
       .then(data => {
         setTrips(data);
@@ -32,7 +33,7 @@ const DriverDashboard = () => {
       });
 
     // Fetch Profile details
-    fetch('/api/auth/profile', { headers: authHeader })
+    apiFetch('/api/auth/profile', { headers: authHeader })
       .then(res => res.json())
       .then(data => {
         setDriverProfile(data.driver_profile);
@@ -48,7 +49,7 @@ const DriverDashboard = () => {
   }, []);
 
   const handleUpdateStatus = (bookingId, newStatus) => {
-    fetch(`/api/bookings/${bookingId}/status`, {
+    apiFetch(`/api/bookings/${bookingId}/status`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -77,7 +78,7 @@ const DriverDashboard = () => {
     if (trackingIntervalId) clearInterval(trackingIntervalId);
 
     const fetchProgress = () => {
-      fetch(`/api/tracking/${trip.id}/progress`, {
+      apiFetch(`/api/tracking/${trip.id}/progress`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       })
         .then(res => res.json())
