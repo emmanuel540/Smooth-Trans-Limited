@@ -33,12 +33,12 @@ def _resolve_db_url() -> str:
 
     if url:
         if _probe_postgres(url):
-            print(f"[DB] Connected to Supabase: {url.split('@')[-1]}")
+            print(f"  [OK] Connected to Supabase: {url.split('@')[-1]}")
             return url
         else:
-            print(f"[DB] WARNING: Cannot reach Supabase. Falling back to local SQLite.")
+            print(f"  [!!] Cannot reach Supabase. Falling back to local SQLite.")
 
-    print(f"[DB] Using local SQLite: {_SQLITE_URI}")
+    print(f"  [--] Using local SQLite: {_SQLITE_URI}")
     return _SQLITE_URI
 
 
