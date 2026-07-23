@@ -5,10 +5,10 @@ import {
   FaShieldAlt, FaStar, FaCheckCircle, FaPhone, FaEnvelope,
   FaTwitter, FaLinkedin, FaInstagram, FaChevronDown, FaClock, FaRoute
 } from 'react-icons/fa';
-import Navbar from '../components/Navbar';
-import MapTracker from '../components/MapTracker';
-import stLogo from '../assets/st_logo.png';
-import heroVan from '../assets/hero_van.png';
+import Navbar from '../shared/Navbar';
+import MapTracker from '../shared/MapTracker';
+import stLogo from '../../assets/st_logo.png';
+import heroVan from '../../assets/hero_van.png';
 
 const nairobiZones = [
   { name: 'Nairobi CBD', lat: -1.2921, lng: 36.8219 },

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Sidebar from '../../components/Sidebar';
+import Sidebar from '../shared/Sidebar';
 import { FaIdCard, FaStar, FaUserPlus, FaCalendarAlt, FaTrash } from 'react-icons/fa';
 
 const DriverProfiles = () => {

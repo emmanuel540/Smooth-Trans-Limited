@@ -1,6 +1,6 @@
 # Smooth Trans Limited
 
-A modern logistics and fleet management platform with dynamic dashboards for Customers, Drivers, Dispatchers, and Admins. Features AI-powered route optimization, demand forecasting, and vehicle predictive maintenance.
+A modern logistics and fleet management platform with dynamic dashboards for Customers, Drivers, Dispatchers, and Admins. Features route optimization, demand forecasting, and vehicle predictive maintenance.
 
 ---
 
@@ -17,21 +17,23 @@ A modern logistics and fleet management platform with dynamic dashboards for Cus
 
 ```
 Smooth-Trans-Limited/
-├── frontend/          # React + Vite application
+├── frontend/              # React + Vite application
 │   ├── src/
-│   │   ├── components/    # Navbar, Sidebar, MapTracker, ProtectedRoute
-│   │   ├── pages/
+│   │   ├── features/
+│   │   │   ├── shared/    # Navbar, Sidebar, MapTracker, ProtectedRoute
+│   │   │   ├── home/      # Home, About, Services, Contact
 │   │   │   ├── auth/      # Login, Register, ForgotPassword
-│   │   │   ├── admin/     # AdminDashboard, FleetManagement, DriverProfiles, AnalyticsReports
 │   │   │   ├── customer/  # CustomerDashboard
+│   │   │   ├── driver/    # DriverDashboard
 │   │   │   ├── dispatcher/# DispatcherDashboard
-│   │   │   └── driver/    # DriverDashboard
-│   │   │   ├── Home.jsx
-│   │   │   └── AboutAndOthers.jsx
-│   │   └── assets/
+│   │   │   └── admin/     # AdminDashboard, FleetManagement, DriverProfiles, AnalyticsReports
+│   │   ├── assets/
+│   │   ├── App.jsx
+│   │   ├── main.jsx
+│   │   └── index.css
 │   └── package.json
-├── backend/           # Flask API server
-└── supabase/          # Database migrations
+├── backend/               # Flask API server
+└── backend/migrations/    # Database migrations
 ```
 
 ---

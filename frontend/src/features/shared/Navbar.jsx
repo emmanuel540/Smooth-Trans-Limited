@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FaUserCircle, FaBars, FaTimes } from 'react-icons/fa';
-import stLogo from '../assets/st_logo.png';
+import stLogo from '../../assets/st_logo.png';
 
 const Navbar = () => {
   const navigate = useNavigate();

@@ -5,7 +5,7 @@ import {
   FaSignOutAlt, FaQuestionCircle, FaTruck, FaIdCard,
   FaMapMarkedAlt, FaClipboardList, FaMoneyBillWave, FaFileAlt, FaChartPie
 } from 'react-icons/fa';
-import stLogo from '../assets/st_logo.png';
+import stLogo from '../../assets/st_logo.png';
 
 const Sidebar = () => {
   const navigate = useNavigate();

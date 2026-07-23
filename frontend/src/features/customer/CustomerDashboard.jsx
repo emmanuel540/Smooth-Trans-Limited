@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import Sidebar from '../../components/Sidebar';
-import Navbar from '../../components/Navbar';
-import MapTracker from '../../components/MapTracker';
+import Sidebar from '../shared/Sidebar';
+import Navbar from '../shared/Navbar';
+import MapTracker from '../shared/MapTracker';
 import { 
   FaRoute, FaMoneyCheckAlt, FaClipboardList, 
   FaMapMarkerAlt, FaCompass, FaRegFileAlt, FaCheckCircle,

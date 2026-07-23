@@ -1,24 +1,26 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
-// Public pages
-import Home from './pages/Home';
-import { About, Services, Contact } from './pages/AboutAndOthers';
+// Home
+import Home from './features/home/Home';
+import { About, Services, Contact } from './features/home/AboutAndOthers';
 
-// Auth pages
-import Login from './pages/auth/Login';
-import Register from './pages/auth/Register';
-import ForgotPassword from './pages/auth/ForgotPassword';
+// Auth
+import Login from './features/auth/Login';
+import Register from './features/auth/Register';
+import ForgotPassword from './features/auth/ForgotPassword';
 
-// Dashboards & Protections
-import ProtectedRoute from './components/ProtectedRoute';
-import CustomerDashboard from './pages/customer/CustomerDashboard';
-import DriverDashboard from './pages/driver/DriverDashboard';
-import DispatcherDashboard from './pages/dispatcher/DispatcherDashboard';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import FleetManagement from './pages/admin/FleetManagement';
-import DriverProfiles from './pages/admin/DriverProfiles';
-import AnalyticsReports from './pages/admin/AnalyticsReports';
+// Shared
+import ProtectedRoute from './features/shared/ProtectedRoute';
+
+// Dashboards
+import CustomerDashboard from './features/customer/CustomerDashboard';
+import DriverDashboard from './features/driver/DriverDashboard';
+import DispatcherDashboard from './features/dispatcher/DispatcherDashboard';
+import AdminDashboard from './features/admin/AdminDashboard';
+import FleetManagement from './features/admin/FleetManagement';
+import DriverProfiles from './features/admin/DriverProfiles';
+import AnalyticsReports from './features/admin/AnalyticsReports';
 
 function App() {
   return (

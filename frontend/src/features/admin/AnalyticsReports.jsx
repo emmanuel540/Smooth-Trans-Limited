@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Sidebar from '../../components/Sidebar';
+import Sidebar from '../shared/Sidebar';
 import { FaFileCsv, FaFilePdf, FaFolderOpen, FaArrowCircleDown, FaClipboardList, FaTruck, FaMoneyBillWave } from 'react-icons/fa';
 
 const AnalyticsReports = () => {

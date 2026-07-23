@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import Sidebar from '../../components/Sidebar';
-import MapTracker from '../../components/MapTracker';
+import Sidebar from '../shared/Sidebar';
+import MapTracker from '../shared/MapTracker';
 import { 
   FaClipboardList, FaTruck, FaMoneyBillWave, 
   FaPlay, FaCheckCircle, FaExclamationTriangle 
