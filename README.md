@@ -1,117 +1,119 @@
 # Smooth Trans Limited
 
-Smooth Trans is a modern logistics and fleet management platform featuring dynamic dashboards for Customers, Drivers, Dispatchers, and Admins. It integrates Safaricom M-Pesa payment flows and provides AI-powered route optimization, demand forecasting, and vehicle predictive maintenance powered by Gemini 3.5 Flash.
+A modern logistics and fleet management platform with dynamic dashboards for Customers, Drivers, Dispatchers, and Admins. Features AI-powered route optimization, demand forecasting, and vehicle predictive maintenance powered by Gemini 3.5 Flash.
 
 ---
 
-## 🛠️ Tech Stack
-- **Frontend:** React + Vite, Tailwind CSS, Leaflet/Mapbox Maps.
-- **Backend:** Flask API (Python 3.10+), SQLAlchemy.
-- **Database:** Supabase PostgreSQL.
-- **AI Engine:** Gemini 3.5 Flash (via Gemini API).
+## Tech Stack
+
+- **Frontend:** React 19 + Vite, React Router, Tailwind CSS, Leaflet Maps
+- **UI Libraries:** Recharts (analytics), React Icons
+- **Backend:** Flask API (Python 3.10+), SQLAlchemy
+- **Database:** Supabase PostgreSQL
+- **AI Engine:** Gemini 3.5 Flash
 
 ---
 
-## 🚀 Getting Started
+## Project Structure
 
-### 1. Database Setup (Supabase)
-Smooth Trans uses Supabase PostgreSQL for data durability, schema safety, and row-level security.
-
-1. Go to your [Supabase Dashboard](https://supabase.com/).
-2. Select your **Smooth Trans** project.
-3. Open the **SQL Editor** from the left-hand sidebar.
-4. Click **New query**, paste the contents of [supabase/migrations/20260720_init_schema.sql](file:///c:/Users/Emmanuel/Desktop/Development/Smooth-Trans-Limited/supabase/migrations/20260720_init_schema.sql), and click **Run**.
-   *This initializes the `users`, `vehicles`, `bookings`, `payments`, `driver_profiles`, `maintenance_logs`, `trip_progress`, and `notifications` tables.*
-
----
-
-### 2. Backend Setup
-1. Navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
-2. Create and activate a Python virtual environment:
-   ```bash
-   python -m venv venv
-   # On Windows:
-   .\venv\Scripts\activate
-   # On Mac/Linux:
-   source venv/bin/activate
-   ```
-3. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-4. Create a `.env` file in the `backend/` directory (template provided below).
-
-#### Backend Environment Variables (`backend/.env`)
-Create `backend/.env` and configure:
-```env
-SECRET_KEY=smooth-trans-super-secret-key-12345
-JWT_SECRET_KEY=jwt-secret-token-key-98765
-
-# Supabase PostgreSQL Connection URL
-# Replace [YOUR_PASSWORD] with your actual Supabase DB password
-DATABASE_URL=postgresql://postgres.ezjecxlodpuviqqgcjwx:[YOUR_PASSWORD]@aws-0-eu-central-1.pooler.supabase.com:6543/postgres?sslmode=require
-
-# Gemini API Key (For AI route optimization commentary, maintenance reports & dispatcher insights)
-GEMINI_API_KEY=your_gemini_api_key_here
-
-# Safaricom M-Pesa Configuration (Optional for Sandbox/Testing)
-MPESA_ENVIRONMENT=sandbox
-MPESA_CONSUMER_KEY=Gf9ksFot0FmpXDz68Z4Ce9opWC0U9g88E8qgQiDLSj0avDue
-MPESA_CONSUMER_SECRET=your_mpesa_consumer_secret
-MPESA_SHORTCODE=174379
-MPESA_PASSKEY=bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919
-MPESA_CALLBACK_URL=http://your-ngrok-url-or-domain.com/api/payments/callback
+```
+Smooth-Trans-Limited/
+├── frontend/          # React + Vite application
+│   ├── src/
+│   │   ├── components/    # Navbar, Sidebar, MapTracker, ProtectedRoute
+│   │   ├── pages/
+│   │   │   ├── auth/      # Login, Register, ForgotPassword
+│   │   │   ├── admin/     # AdminDashboard, FleetManagement, DriverProfiles, AnalyticsReports
+│   │   │   ├── customer/  # CustomerDashboard
+│   │   │   ├── dispatcher/# DispatcherDashboard
+│   │   │   └── driver/    # DriverDashboard
+│   │   │   ├── Home.jsx
+│   │   │   └── AboutAndOthers.jsx
+│   │   └── assets/
+│   └── package.json
+├── backend/           # Flask API server
+└── supabase/          # Database migrations
 ```
 
 ---
 
-### 3. Database Seeding
-To populate your new Supabase database with sample users, vehicles, historical bookings, and maintenance logs:
-1. Ensure your virtual environment is active in the `backend/` directory.
-2. Ensure your `.env` contains your correct database password.
-3. Run the database seeder:
-   ```bash
-   python database_seeder.py
-   ```
-   *Note: This drops existing tables in your database and seeds clean mock data.*
+## Getting Started
 
----
+### Prerequisites
 
-### 4. Running the Servers
+- Node.js 18+
+- npm or yarn
 
-#### Start Backend
-From the `backend/` directory (with active venv):
+### Installation
+
 ```bash
-python app.py
-```
-The server will start at `http://localhost:5000`.
+# Clone the repository
+git clone https://github.com/emmanuel540/Smooth-Trans-Limited.git
+cd Smooth-Trans-Limited
 
-#### Start Frontend
-1. Navigate to the `frontend/` directory:
-   ```bash
-   cd ../frontend
-   ```
-2. Install npm packages:
-   ```bash
-   npm install
-   ```
-3. Start the Vite development server:
-   ```bash
-   npm run dev
-   ```
-The app will open at `http://localhost:5173`.
+# Navigate to frontend
+cd frontend
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+```
+
+The app runs at `http://localhost:5173`.
 
 ---
 
-## 🔑 Demo Account Credentials
-After database seeding, use these credentials to log in to different dashboards:
+## Scripts
+
+| Command | Description |
+| :--- | :--- |
+| `npm run dev` | Start Vite dev server |
+| `npm run build` | Build for production |
+| `npm run preview` | Preview production build |
+| `npm run lint` | Run ESLint |
+
+---
+
+## Routes
+
+### Public
+
+| Path | Page |
+| :--- | :--- |
+| `/` | Home |
+| `/about` | About |
+| `/services` | Services |
+| `/contact` | Contact |
+
+### Auth
+
+| Path | Page |
+| :--- | :--- |
+| `/login` | Login |
+| `/register` | Register |
+| `/forgot-password` | Forgot Password |
+
+### Protected Dashboards
+
+| Path | Role | Page |
+| :--- | :--- | :--- |
+| `/dashboard/customer/*` | Passenger | Customer Dashboard |
+| `/dashboard/driver/*` | Driver | Driver Dashboard |
+| `/dashboard/dispatcher/*` | Dispatcher | Dispatcher Dashboard |
+| `/dashboard/admin` | Admin | Admin Dashboard |
+| `/dashboard/admin/fleet` | Admin | Fleet Management |
+| `/dashboard/admin/drivers` | Admin | Driver Profiles |
+| `/dashboard/admin/reports` | Admin | Analytics & Reports |
+
+---
+
+## Demo Credentials
 
 | Dashboard | Email | Password |
 | :--- | :--- | :--- |
 | **Admin** | `admin@smooth.co.ke` | `password123` |
 | **Dispatcher** | `dispatcher@smooth.co.ke` | `password123` |
-| **Driver 1** | `driver1@smooth.co.ke` | `password123` |
-| **Customer/Passenger** | `alex@gmail.com` | `password123` |
+| **Driver** | `driver1@smooth.co.ke` | `password123` |
+| **Customer** | `alex@gmail.com` | `password123` |
