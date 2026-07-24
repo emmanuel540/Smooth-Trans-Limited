@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, Response, request
 from backend.models import db, Booking, Payment, DriverProfile, Vehicle, User
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import csv
 import io
 
@@ -38,7 +38,7 @@ def get_dashboard_stats():
 
     # Revenue over time (last 7 days)
     revenue_chart = []
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     for i in range(6, -1, -1):
         day = now - timedelta(days=i)
         day_str = day.strftime('%a') # Mon, Tue...

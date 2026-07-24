@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from datetime import datetime
+from datetime import datetime, timezone
 from backend.models import db, Vehicle, MaintenanceLog, DriverProfile
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from backend.models import User
@@ -33,23 +33,23 @@ def add_vehicle():
     year = data.get('year')
     v_type = data.get('type') # Transport, SchoolBus, DeliveryVan, MovingTruck
     
-    if not all([plate_number, make, model, year, v_type]):
+    if year is None or not all([plate_number, make, model, v_type]):
         return jsonify({'message': 'Missing vehicle details'}), 400
 
     if Vehicle.query.filter_by(plate_number=plate_number).first():
         return jsonify({'message': 'Plate number already registered'}), 400
 
     new_vehicle = Vehicle(
-        plate_number=plate_number,
-        make=make,
-        model=model,
+        plate_number=str(plate_number),
+        make=str(make),
+        model=str(model),
         year=int(year),
-        type=v_type,
+        type=str(v_type),
         status='Active',
-        mileage=data.get('mileage', 0.0),
-        fuel_level=data.get('fuel_level', 100.0),
-        avg_fuel_consumption=data.get('avg_fuel_consumption', 10.0),
-        last_service_mileage=data.get('last_service_mileage', 0.0)
+        mileage=float(data.get('mileage', 0.0) or 0.0),
+        fuel_level=float(data.get('fuel_level', 100.0) or 100.0),
+        avg_fuel_consumption=float(data.get('avg_fuel_consumption', 10.0) or 10.0),
+        last_service_mileage=float(data.get('last_service_mileage', 0.0) or 0.0)
     )
 
     db.session.add(new_vehicle)
@@ -104,29 +104,34 @@ def import_fleet():
         year = item.get('year')
         v_type = item.get('type')
 
-        if not all([plate_number, make, model, year, v_type]):
+        if year is None or not all([plate_number, make, model, v_type]):
             continue
 
-        existing = Vehicle.query.filter_by(plate_number=plate_number).first()
+        item_mileage = item.get('mileage')
+        item_fuel = item.get('fuel_level')
+
+        existing = Vehicle.query.filter_by(plate_number=str(plate_number)).first()
         if existing:
-            existing.make = make
-            existing.model = model
+            existing.make = str(make)
+            existing.model = str(model)
             existing.year = int(year)
-            existing.type = v_type
-            existing.status = item.get('status', existing.status)
-            existing.mileage = float(item.get('mileage', existing.mileage))
-            existing.fuel_level = float(item.get('fuel_level', existing.fuel_level))
+            existing.type = str(v_type)
+            existing.status = str(item.get('status', existing.status))
+            if item_mileage is not None:
+                existing.mileage = float(item_mileage)
+            if item_fuel is not None:
+                existing.fuel_level = float(item_fuel)
             updated_count += 1
         else:
             v = Vehicle(
-                plate_number=plate_number,
-                make=make,
-                model=model,
+                plate_number=str(plate_number),
+                make=str(make),
+                model=str(model),
                 year=int(year),
-                type=v_type,
-                status=item.get('status', 'Active'),
-                mileage=float(item.get('mileage', 0)),
-                fuel_level=float(item.get('fuel_level', 100))
+                type=str(v_type),
+                status=str(item.get('status', 'Active')),
+                mileage=float(item_mileage) if item_mileage is not None else 0.0,
+                fuel_level=float(item_fuel) if item_fuel is not None else 100.0
             )
             db.session.add(v)
             imported_count += 1
@@ -212,7 +217,7 @@ def vehicle_maintenance(vehicle_id):
         vehicle_id=vehicle_id,
         description=description,
         cost=float(cost),
-        service_date=datetime.utcnow().date(),
+        service_date=datetime.now(timezone.utc).date(),
         current_mileage=vehicle.mileage
     )
     db.session.add(log)
