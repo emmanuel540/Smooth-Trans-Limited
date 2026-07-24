@@ -55,9 +55,10 @@ const Login = () => {
   };
 
   const roles = [
-    { key: 'passenger', label: 'Passenger' },
-    { key: 'driver',    label: 'Driver' },
-    { key: 'admin',     label: 'Admin' },
+    { key: 'passenger',  label: 'Passenger' },
+    { key: 'driver',     label: 'Driver' },
+    { key: 'dispatcher', label: 'Dispatcher' },
+    { key: 'admin',      label: 'Admin' },
   ];
 
   return (
