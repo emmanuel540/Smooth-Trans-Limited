@@ -57,6 +57,87 @@ def add_vehicle():
 
     return jsonify({'message': 'Vehicle added successfully', 'vehicle': new_vehicle.to_dict()}), 201
 
+@fleet_bp.route('/import', methods=['POST'])
+@jwt_required()
+def import_fleet():
+    user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
+    if user.role not in ['admin', 'dispatcher']:
+        return jsonify({'message': 'Unauthorized'}), 403
+
+    import csv
+    import io
+
+    vehicles_data = []
+
+    # Handle file upload (CSV) or JSON array
+    if 'file' in request.files:
+        file = request.files['file']
+        stream = io.StringIO(file.stream.read().decode("UTF-8"), newline=None)
+        reader = csv.DictReader(stream)
+        for row in reader:
+            clean_row = {k.strip(): v.strip() for k, v in row.items() if k}
+            vehicles_data.append({
+                'plate_number': clean_row.get('Plate Number'),
+                'make': clean_row.get('Make'),
+                'model': clean_row.get('Model'),
+                'year': clean_row.get('Year'),
+                'type': clean_row.get('Type'),
+                'status': clean_row.get('Status', 'Active'),
+                'mileage': clean_row.get('Mileage (km)', 0),
+                'fuel_level': clean_row.get('Fuel Level (%)', 100)
+            })
+    elif request.is_json:
+        payload = request.get_json()
+        vehicles_data = payload.get('vehicles', []) if isinstance(payload, dict) else payload
+
+    if not vehicles_data:
+        return jsonify({'message': 'No vehicle data provided'}), 400
+
+    imported_count = 0
+    updated_count = 0
+
+    for item in vehicles_data:
+        plate_number = item.get('plate_number')
+        make = item.get('make')
+        model = item.get('model')
+        year = item.get('year')
+        v_type = item.get('type')
+
+        if not all([plate_number, make, model, year, v_type]):
+            continue
+
+        existing = Vehicle.query.filter_by(plate_number=plate_number).first()
+        if existing:
+            existing.make = make
+            existing.model = model
+            existing.year = int(year)
+            existing.type = v_type
+            existing.status = item.get('status', existing.status)
+            existing.mileage = float(item.get('mileage', existing.mileage))
+            existing.fuel_level = float(item.get('fuel_level', existing.fuel_level))
+            updated_count += 1
+        else:
+            v = Vehicle(
+                plate_number=plate_number,
+                make=make,
+                model=model,
+                year=int(year),
+                type=v_type,
+                status=item.get('status', 'Active'),
+                mileage=float(item.get('mileage', 0)),
+                fuel_level=float(item.get('fuel_level', 100))
+            )
+            db.session.add(v)
+            imported_count += 1
+
+    db.session.commit()
+    return jsonify({
+        'message': f'Import successful: {imported_count} created, {updated_count} updated.',
+        'imported_count': imported_count,
+        'updated_count': updated_count
+    }), 200
+
 @fleet_bp.route('/<int:vehicle_id>', methods=['GET', 'PUT', 'DELETE'])
 @jwt_required()
 def handle_vehicle(vehicle_id):

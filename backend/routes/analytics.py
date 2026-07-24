@@ -12,7 +12,7 @@ analytics_bp = Blueprint('analytics', __name__)
 def get_dashboard_stats():
     user_id = int(get_jwt_identity())
     user = User.query.get(user_id)
-    if user.role not in ['admin', 'dispatcher']:
+    if not user or user.role not in ['admin', 'dispatcher']:
         return jsonify({'message': 'Unauthorized'}), 403
 
     # Total Bookings
@@ -101,7 +101,7 @@ def get_dashboard_stats():
 def export_csv():
     user_id = int(get_jwt_identity())
     user = User.query.get(user_id)
-    if user.role not in ['admin', 'dispatcher']:
+    if not user or user.role not in ['admin', 'dispatcher']:
         return jsonify({'message': 'Unauthorized'}), 403
 
     report_type = request.args.get('type', 'bookings') # bookings, fleet, revenue

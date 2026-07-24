@@ -9,7 +9,7 @@ drivers_bp = Blueprint('drivers', __name__)
 def get_drivers():
     user_id = int(get_jwt_identity())
     user = User.query.get(user_id)
-    if user.role not in ['admin', 'dispatcher']:
+    if not user or user.role not in ['admin', 'dispatcher']:
         return jsonify({'message': 'Unauthorized'}), 403
 
     drivers = DriverProfile.query.all()
