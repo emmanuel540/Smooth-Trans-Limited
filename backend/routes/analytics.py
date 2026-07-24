@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, Response, request
 from backend.models import db, Booking, Payment, DriverProfile, Vehicle, User
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import csv
 import io
 
@@ -12,7 +12,7 @@ analytics_bp = Blueprint('analytics', __name__)
 def get_dashboard_stats():
     user_id = int(get_jwt_identity())
     user = User.query.get(user_id)
-    if user.role not in ['admin', 'dispatcher']:
+    if not user or user.role not in ['admin', 'dispatcher']:
         return jsonify({'message': 'Unauthorized'}), 403
 
     # Total Bookings
@@ -38,7 +38,7 @@ def get_dashboard_stats():
 
     # Revenue over time (last 7 days)
     revenue_chart = []
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     for i in range(6, -1, -1):
         day = now - timedelta(days=i)
         day_str = day.strftime('%a') # Mon, Tue...
@@ -67,7 +67,7 @@ def get_dashboard_stats():
     # Driver leaderboard
     drivers = DriverProfile.query.order_by(DriverProfile.rating.desc()).limit(5).all()
     driver_leaderboard = [{
-        'name': d.user.name,
+        'name': d.user.name if d.user else 'Driver',
         'rating': d.rating,
         'status': d.status,
         'trips_completed': Booking.query.filter_by(driver_id=d.user_id, status='Completed').count()
@@ -101,7 +101,7 @@ def get_dashboard_stats():
 def export_csv():
     user_id = int(get_jwt_identity())
     user = User.query.get(user_id)
-    if user.role not in ['admin', 'dispatcher']:
+    if not user or user.role not in ['admin', 'dispatcher']:
         return jsonify({'message': 'Unauthorized'}), 403
 
     report_type = request.args.get('type', 'bookings') # bookings, fleet, revenue

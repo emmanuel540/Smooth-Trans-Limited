@@ -55,9 +55,10 @@ const Login = () => {
   };
 
   const roles = [
-    { key: 'passenger', label: 'Passenger' },
-    { key: 'driver',    label: 'Driver' },
-    { key: 'admin',     label: 'Admin' },
+    { key: 'passenger',  label: 'Passenger' },
+    { key: 'driver',     label: 'Driver' },
+    { key: 'dispatcher', label: 'Dispatcher' },
+    { key: 'admin',      label: 'Admin' },
   ];
 
   return (
@@ -95,7 +96,7 @@ const Login = () => {
       <div style={{
         background: '#ffffff', border: '1px solid #E2E8F0',
         borderRadius: '12px', padding: '28px 28px',
-        width: '100%', maxWidth: '420px',
+        width: '100%', maxWidth: '440px',
         boxShadow: '0 1px 3px rgba(0,0,0,0.06)'
       }}>
 
@@ -105,7 +106,7 @@ const Login = () => {
             Select Your Role
           </div>
           <div style={{
-            display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
+            display: 'grid', gridTemplateColumns: `repeat(${roles.length}, 1fr)`,
             background: '#F1F5F9', borderRadius: '8px', padding: '3px', gap: '3px'
           }}>
             {roles.map(({ key, label }) => (
