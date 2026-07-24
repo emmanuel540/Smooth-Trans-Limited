@@ -67,7 +67,7 @@ def get_dashboard_stats():
     # Driver leaderboard
     drivers = DriverProfile.query.order_by(DriverProfile.rating.desc()).limit(5).all()
     driver_leaderboard = [{
-        'name': d.user.name,
+        'name': d.user.name if d.user else 'Driver',
         'rating': d.rating,
         'status': d.status,
         'trips_completed': Booking.query.filter_by(driver_id=d.user_id, status='Completed').count()

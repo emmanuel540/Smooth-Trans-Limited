@@ -23,7 +23,7 @@ def get_fleet():
 def add_vehicle():
     user_id = int(get_jwt_identity())
     user = User.query.get(user_id)
-    if user.role not in ['admin', 'dispatcher']:
+    if not user or user.role not in ['admin', 'dispatcher']:
         return jsonify({'message': 'Unauthorized'}), 403
 
     data = request.get_json() or {}
@@ -62,7 +62,7 @@ def add_vehicle():
 def import_fleet():
     user_id = int(get_jwt_identity())
     user = User.query.get(user_id)
-    if user.role not in ['admin', 'dispatcher']:
+    if not user or user.role not in ['admin', 'dispatcher']:
         return jsonify({'message': 'Unauthorized'}), 403
 
     import csv
